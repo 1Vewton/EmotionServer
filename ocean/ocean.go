@@ -8,3 +8,20 @@ type Personality struct {
 	Agreeableness     float64
 	Neuroticism       float64
 }
+
+// NewPersonality creates new personality
+func NewPersonality(
+	openness float64,
+	conscientiousness float64,
+	extraversion float64,
+	agreeableness float64,
+	neuroticism float64,
+) *Personality {
+	return &Personality{
+		Openness:          openness,
+		Conscientiousness: conscientiousness,
+		Extraversion:      extraversion,
+		Agreeableness:     agreeableness,
+		Neuroticism:       neuroticism,
+	}
+}

@@ -2,6 +2,7 @@ package emotion
 
 import (
 	"errors"
+	"fmt"
 )
 
 // Emotion defines the emotion
@@ -37,4 +38,16 @@ func NewEmotion(
 		Certainty: certainty,
 		Novalty:   novelty,
 	}, nil
+}
+
+// ShowEmotionInfo shows the info of the emotion
+func (emotion *Emotion) ShowEmotionInfo() string {
+	return fmt.Sprintf(
+		"P:%f;A:%f,D:%f;C:%f;N:%f",
+		emotion.Pleasure,
+		emotion.Arousal,
+		emotion.Dominance,
+		emotion.Certainty,
+		emotion.Novalty,
+	)
 }

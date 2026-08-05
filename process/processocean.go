@@ -1,6 +1,7 @@
-package processocean
+package process
 
 import (
+	"github.com/1Vewton/EmotionServer/emotion"
 	"github.com/1Vewton/EmotionServer/ocean"
 	"github.com/1Vewton/EmotionServer/utils/mathematics"
 )
@@ -47,5 +48,18 @@ func GetNovelty(personality ocean.Personality) float64 {
 	return mathematics.DotProductProcessing(
 		personality,
 		[5]float64(processMatirx),
+	)
+}
+
+// GetInitialEmotion gets the initial emotion according to the ocean personality
+func GetInitialEmotion(
+	personality ocean.Personality,
+) (*emotion.Emotion, error) {
+	return emotion.NewEmotion(
+		GetPleasure(personality),
+		GetArousal(personality),
+		GetDominance(personality),
+		GetCertainty(personality),
+		GetNovelty(personality),
 	)
 }
