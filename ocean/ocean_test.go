@@ -1,17 +1,16 @@
-package process
+package ocean
 
 import (
 	"testing"
 
 	"github.com/1Vewton/EmotionServer/emotion"
-	"github.com/1Vewton/EmotionServer/ocean"
 )
 
 // TestGetInitialEmotionMutual tests the initial emotion
 func TestGetInitialEmotionMutual(
 	t *testing.T,
 ) {
-	mutualPersonality := ocean.NewPersonality(
+	mutualPersonality := NewPersonality(
 		0.0,
 		0.0,
 		0.0,
