@@ -3,6 +3,8 @@ package emotion
 import (
 	"errors"
 	"fmt"
+
+	"github.com/1Vewton/EmotionServer/utils/mathematics"
 )
 
 // Emotion defines the emotion
@@ -11,7 +13,7 @@ type Emotion struct {
 	Arousal   float64
 	Dominance float64
 	Certainty float64
-	Novalty   float64
+	Novelty   float64
 }
 
 // NewEmotion creates new PADCN emotion status
@@ -36,7 +38,7 @@ func NewEmotion(
 		Arousal:   arousal,
 		Dominance: dominance,
 		Certainty: certainty,
-		Novalty:   novelty,
+		Novelty:   novelty,
 	}, nil
 }
 
@@ -48,6 +50,46 @@ func (emotion *Emotion) ShowEmotionInfo() string {
 		emotion.Arousal,
 		emotion.Dominance,
 		emotion.Certainty,
-		emotion.Novalty,
+		emotion.Novelty,
 	)
+}
+
+// Equals see if two emotions are equal
+func (emotion *Emotion) Equals(
+	emotion2 *Emotion,
+) bool {
+	if mathematics.RoundDigits(
+		emotion.Pleasure,
+		0.01,
+	) == mathematics.RoundDigits(
+		emotion2.Pleasure,
+		0.01,
+	) && mathematics.RoundDigits(
+		emotion.Arousal,
+		0.01,
+	) == mathematics.RoundDigits(
+		emotion2.Arousal,
+		0.01,
+	) && mathematics.RoundDigits(
+		emotion.Dominance,
+		0.01,
+	) == mathematics.RoundDigits(
+		emotion2.Dominance,
+		0.01,
+	) && mathematics.RoundDigits(
+		emotion.Certainty,
+		0.01,
+	) == mathematics.RoundDigits(
+		emotion2.Certainty,
+		0.01,
+	) && mathematics.RoundDigits(
+		emotion.Novelty,
+		0.01,
+	) == mathematics.RoundDigits(
+		emotion2.Novelty,
+		0.01,
+	) {
+		return true
+	}
+	return false
 }

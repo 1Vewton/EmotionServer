@@ -34,7 +34,7 @@ func TestGetInitialEmotionMutual(
 		t.Error(errInitialEmotion.Error())
 	}
 	// Check data
-	if *initialEmotionMutual != *targetEmotion {
+	if !initialEmotionMutual.Equals(targetEmotion) {
 		t.Errorf(
 			"Expected %s, got %s",
 			targetEmotion.ShowEmotionInfo(),
