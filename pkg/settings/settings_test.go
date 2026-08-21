@@ -2,12 +2,13 @@ package settings
 
 import (
 	"testing"
+
+	"github.com/1Vewton/EmotionServer/pkg/databasetype"
 )
 
 // Test the env reading of string var
 func TestEnvReadingString(t *testing.T) {
-	var res string
-	res = GetEnvString("test", "T")
+	res := GetEnvString("test", "T")
 	if res != "T" {
 		t.Errorf("Expected T, got %s", res)
 	}
@@ -25,5 +26,40 @@ func TestEnvSettingString(t *testing.T) {
 	res := tSetting.GetServerPort()
 	if res != "114514" {
 		t.Errorf("Expected 114514, got %s", res)
+	}
+}
+
+// TestEnvReadingInteger tests the env reading of integer var
+func TestEnvReadingInteger(t *testing.T) {
+	res := GetEnvInteger("TEST", 0)
+	if res != 0 {
+		t.Errorf(
+			"Expected %d, got %d",
+			0,
+			res,
+		)
+	}
+	t.Setenv("test", "1")
+	res = GetEnvInteger("TEST", 0)
+	if res != 1 {
+		t.Errorf(
+			"Expected %d, got %d",
+			1,
+			res,
+		)
+	}
+}
+
+// TestEnvSettingDatabaseType tests the env setting of database type
+func TestEnvSettingDatabaseType(t *testing.T) {
+	t.Setenv("DATABASE_Type", "0")
+	var tSetting *settings = &settings{}
+	res := tSetting.GetDatabaseType()
+	if res != databasetype.Sqlite {
+		t.Errorf(
+			"Expected %d, got %d",
+			databasetype.Sqlite,
+			res,
+		)
 	}
 }

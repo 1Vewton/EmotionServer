@@ -3,13 +3,16 @@ package settings
 import (
 	"fmt"
 
+	"github.com/1Vewton/EmotionServer/pkg/databasetype"
 	"github.com/joho/godotenv"
 )
 
 // settings stores the config of the program
 type settings struct {
-	serverPort *string
-	serverHost *string
+	serverPort   *string
+	serverHost   *string
+	databaseURL  *string
+	databaseType *int
 }
 
 // Initialize reads the env file setted
@@ -33,6 +36,26 @@ func (s *settings) GetServerHost() string {
 		"SERVER_HOST",
 		"0.0.0.0",
 		&s.serverHost,
+	)
+}
+
+// GetDatabaseURL gets the url of the database
+func (s *settings) GetDatabaseURL() string {
+	return SetConfigString(
+		"DATABASE_URL",
+		"file::memory:?cache=shared",
+		&s.databaseURL,
+	)
+}
+
+// GetDatabaseType gets the type of the database
+func (s *settings) GetDatabaseType() databasetype.DatabaseType {
+	return databasetype.ToDatabaseType(
+		SetConfigInteger(
+			"DATABASE_Type",
+			0,
+			&s.databaseType,
+		),
 	)
 }
 
