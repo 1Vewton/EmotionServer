@@ -5,7 +5,7 @@ package settings
 import (
 	"fmt"
 
-	"github.com/1Vewton/EmotionServer/utils/logger"
+	"github.com/1Vewton/EmotionServer/pkg/logger"
 )
 
 // Read the .env file

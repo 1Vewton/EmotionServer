@@ -3,7 +3,7 @@ package ocean
 import (
 	"testing"
 
-	"github.com/1Vewton/EmotionServer/emotion"
+	"github.com/1Vewton/EmotionServer/internal/emotion"
 )
 
 // TestGetInitialEmotionMutual tests the initial emotion for mutual personality

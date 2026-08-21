@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/1Vewton/EmotionServer/utils/mathematics"
+	"github.com/1Vewton/EmotionServer/pkg/mathematics"
 )
 
 // Emotion defines the emotion

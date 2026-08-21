@@ -1,7 +1,7 @@
 package ocean
 
 import (
-	"github.com/1Vewton/EmotionServer/emotion"
+	"github.com/1Vewton/EmotionServer/internal/emotion"
 )
 
 // GetPleasure gets the pleasure of the initial emotion.
