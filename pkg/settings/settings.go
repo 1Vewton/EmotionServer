@@ -1,13 +1,15 @@
 package settings
 
 import (
+	"fmt"
+
 	"github.com/joho/godotenv"
 )
 
 // settings stores the config of the program
 type settings struct {
 	serverPort *string
-	serverURL  *string
+	serverHost *string
 }
 
 // Initialize reads the env file setted
@@ -25,11 +27,20 @@ func (s *settings) GetServerPort() string {
 	)
 }
 
-// GetServerURL gets the url of the service running on
-func (s *settings) GetServerURL() string {
+// GetServerHost gets the host of the service running on
+func (s *settings) GetServerHost() string {
 	return SetConfigString(
-		"SERVER_URL",
+		"SERVER_HOST",
 		"0.0.0.0",
-		&s.serverURL,
+		&s.serverHost,
+	)
+}
+
+// GetServerURL gets the url of the service
+func (s *settings) GetServerURL() string {
+	return fmt.Sprintf(
+		"%s:%s",
+		s.GetServerHost(),
+		s.GetServerPort(),
 	)
 }

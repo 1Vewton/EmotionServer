@@ -8,13 +8,20 @@ import (
 )
 
 // CheckHealth checks the health status
+// @Summary Checks health
+// @Schemes
+// @Description check health
+// @Tags example
+// @Accept json
+// @Produce json
+// @Success 200 {object} api.Response
+// @Router /utils/health [get]
 func CheckHealth(c *gin.Context) {
-	c.JSON(
+	api.NewResponse(
+		c,
 		http.StatusOK,
-		api.NewResponse(
-			true,
-			nil,
-			nil,
-		),
+		true,
+		nil,
+		nil,
 	)
 }

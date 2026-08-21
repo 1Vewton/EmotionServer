@@ -1,5 +1,9 @@
 package api
 
+import (
+	"github.com/gin-gonic/gin"
+)
+
 // Response defines the basic response of the response
 type Response struct {
 	Success bool    `json:"success"`
@@ -9,10 +13,12 @@ type Response struct {
 
 // NewResponse creates response
 func NewResponse(
+	c *gin.Context,
+	code int,
 	success bool,
 	data any,
 	err error,
-) Response {
+) {
 	var errInfo *string
 	if err == nil {
 		errInfo = nil
@@ -20,9 +26,10 @@ func NewResponse(
 		errString := err.Error()
 		errInfo = &errString
 	}
-	return Response{
+	newResponse := Response{
 		Success: success,
 		Error:   errInfo,
 		Data:    data,
 	}
+	c.JSON(code, newResponse)
 }

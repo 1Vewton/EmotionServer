@@ -1,0 +1,37 @@
+definitions:
+  api.Response:
+    properties:
+      data: {}
+      error:
+        type: string
+      success:
+        type: boolean
+    type: object
+info:
+  contact:
+    email: zhanyunze0601@gmai.com
+    name: 1Vewton
+    url: https://github.com/1Vewton
+  description: A service to simulate emotion for agent
+  license:
+    name: MIT
+  termsOfService: http://swagger.io/terms/
+  title: Emotion Simulator
+  version: "1.0"
+paths:
+  /utils/health:
+    get:
+      consumes:
+      - application/json
+      description: check health
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.Response'
+      summary: Checks health
+      tags:
+      - example
+swagger: "2.0"
