@@ -39,7 +39,7 @@ func TestEnvReadingInteger(t *testing.T) {
 			res,
 		)
 	}
-	t.Setenv("test", "1")
+	t.Setenv("TEST", "1")
 	res = GetEnvInteger("TEST", 0)
 	if res != 1 {
 		t.Errorf(
