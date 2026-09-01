@@ -3,7 +3,7 @@ package settings
 import (
 	"testing"
 
-	"github.com/1Vewton/EmotionServer/pkg/databasetype"
+	"github.com/1Vewton/EmotionServer/pkg/database"
 )
 
 // Test the env reading of string var
@@ -55,10 +55,10 @@ func TestEnvSettingDatabaseType(t *testing.T) {
 	t.Setenv("DATABASE_Type", "0")
 	var tSetting *settings = &settings{}
 	res := tSetting.GetDatabaseType()
-	if res != databasetype.Sqlite {
+	if res != database.Sqlite {
 		t.Errorf(
 			"Expected %d, got %d",
-			databasetype.Sqlite,
+			database.Sqlite,
 			res,
 		)
 	}

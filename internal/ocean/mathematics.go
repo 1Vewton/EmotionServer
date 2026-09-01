@@ -1,8 +1,7 @@
 package ocean
 
 // DotProductProcessing gets the result of processing personality
-func DotProductProcessing(
-	personality Personality,
+func (personality *Personality) DotProductProcessing(
 	processMatrix [5]float64,
 ) float64 {
 	result := 0.0

@@ -27,9 +27,7 @@ func TestGetInitialEmotionMutual(
 	if errEmotion != nil {
 		t.Error(errEmotion.Error())
 	}
-	initialEmotionMutual, errInitialEmotion := GetInitialEmotion(
-		*mutualPersonality,
-	)
+	initialEmotionMutual, errInitialEmotion := mutualPersonality.GetInitialEmotion()
 	if errInitialEmotion != nil {
 		t.Error(errInitialEmotion.Error())
 	}
@@ -64,9 +62,7 @@ func TestGetInitialEmotionHelper(
 	if errEmotion != nil {
 		t.Error(errEmotion.Error())
 	}
-	initialEmotionHelper, errInitialEmotion := GetInitialEmotion(
-		*helperPersonality,
-	)
+	initialEmotionHelper, errInitialEmotion := helperPersonality.GetInitialEmotion()
 	if errInitialEmotion != nil {
 		t.Error(errInitialEmotion.Error())
 	}
@@ -101,9 +97,7 @@ func TestGetInitialEmotionAnalyst(
 	if errEmotion != nil {
 		t.Error(errEmotion.Error())
 	}
-	initialEmotionAnalyst, errInitialEmotion := GetInitialEmotion(
-		*analystPersonality,
-	)
+	initialEmotionAnalyst, errInitialEmotion := analystPersonality.GetInitialEmotion()
 	if errInitialEmotion != nil {
 		t.Error(errInitialEmotion.Error())
 	}

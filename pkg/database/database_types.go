@@ -1,4 +1,14 @@
-package databasetype
+package database
+
+import (
+	"fmt"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
+
+	"gorm.io/gorm"
+)
 
 // DatabaseType defines the type of the database
 type DatabaseType int
@@ -23,6 +33,25 @@ func (databaseType DatabaseType) ToInt() int {
 		return 2
 	default:
 		return 0
+	}
+}
+
+// GetDriver gets the driver for database url
+func (databaseType DatabaseType) GetDriver(
+	databaseURL string,
+) (gorm.Dialector, error) {
+	switch databaseType {
+	case Sqlite:
+		return sqlite.Open(databaseURL), nil
+	case MySQL:
+		return mysql.Open(databaseURL), nil
+	case Postgres:
+		return postgres.Open(databaseURL), nil
+	default:
+		return nil, fmt.Errorf(
+			"Database type %d not supported",
+			databaseType,
+		)
 	}
 }
 
