@@ -3,7 +3,7 @@ package settings
 import (
 	"fmt"
 
-	"github.com/1Vewton/EmotionServer/pkg/database"
+	"github.com/1Vewton/EmotionServer/pkg/databasetype"
 	"github.com/joho/godotenv"
 )
 
@@ -49,10 +49,10 @@ func (s *settings) GetDatabaseURL() string {
 }
 
 // GetDatabaseType gets the type of the database
-func (s *settings) GetDatabaseType() database.DatabaseType {
-	return database.ToDatabaseType(
+func (s *settings) GetDatabaseType() databasetype.DatabaseType {
+	return databasetype.ToDatabaseType(
 		SetConfigInteger(
-			"DATABASE_Type",
+			"DATABASE_TYPE",
 			0,
 			&s.databaseType,
 		),
