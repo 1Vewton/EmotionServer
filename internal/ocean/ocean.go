@@ -18,10 +18,10 @@ func NewPersonality(
 	neuroticism float64,
 ) *Personality {
 	return &Personality{
-		Openness:          openness,
-		Conscientiousness: conscientiousness,
-		Extraversion:      extraversion,
-		Agreeableness:     agreeableness,
-		Neuroticism:       neuroticism,
+		Openness:          min(max(openness, -1.0), 1.0),
+		Conscientiousness: min(max(conscientiousness, -1.0), 1.0),
+		Extraversion:      min(max(extraversion, -1.0), 1.0),
+		Agreeableness:     min(max(agreeableness, -1.0), 1.0),
+		Neuroticism:       min(max(neuroticism, -1.0), 1.0),
 	}
 }

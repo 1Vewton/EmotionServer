@@ -8,6 +8,7 @@ import (
 func TestRoundDigit(
 	t *testing.T,
 ) {
+	t.Parallel()
 	const testVal float64 = 0.114514
 	testVal1 := RoundDigits(testVal, 0.01)
 	if testVal1 != 0.11 {

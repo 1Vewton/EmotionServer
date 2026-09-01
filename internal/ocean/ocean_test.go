@@ -10,6 +10,7 @@ import (
 func TestGetInitialEmotionMutual(
 	t *testing.T,
 ) {
+	t.Parallel()
 	mutualPersonality := NewPersonality(
 		0.0,
 		0.0,
@@ -45,6 +46,7 @@ func TestGetInitialEmotionMutual(
 func TestGetInitialEmotionHelper(
 	t *testing.T,
 ) {
+	t.Parallel()
 	helperPersonality := NewPersonality(
 		0.30,
 		0.50,
@@ -80,6 +82,7 @@ func TestGetInitialEmotionHelper(
 func TestGetInitialEmotionAnalyst(
 	t *testing.T,
 ) {
+	t.Parallel()
 	analystPersonality := NewPersonality(
 		0.40,
 		0.80,

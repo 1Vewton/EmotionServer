@@ -8,6 +8,7 @@ import (
 
 // Test the env reading of string var
 func TestEnvReadingString(t *testing.T) {
+	t.Parallel()
 	res := GetEnvString("test", "T")
 	if res != "T" {
 		t.Errorf("Expected T, got %s", res)
@@ -21,6 +22,7 @@ func TestEnvReadingString(t *testing.T) {
 
 // Test the env setting
 func TestEnvSettingString(t *testing.T) {
+	t.Parallel()
 	var tSetting *settings = &settings{}
 	t.Setenv("SERVER_PORT", "114514")
 	res := tSetting.GetServerPort()
@@ -31,6 +33,7 @@ func TestEnvSettingString(t *testing.T) {
 
 // TestEnvReadingInteger tests the env reading of integer var
 func TestEnvReadingInteger(t *testing.T) {
+	t.Parallel()
 	res := GetEnvInteger("TEST", 0)
 	if res != 0 {
 		t.Errorf(
@@ -52,6 +55,7 @@ func TestEnvReadingInteger(t *testing.T) {
 
 // TestEnvSettingDatabaseType tests the env setting of database type
 func TestEnvSettingDatabaseType(t *testing.T) {
+	t.Parallel()
 	t.Setenv("DATABASE_TYPE", "0")
 	var tSetting *settings = &settings{}
 	res := tSetting.GetDatabaseType()
