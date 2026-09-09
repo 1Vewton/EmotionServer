@@ -18,26 +18,28 @@ func Connect(
 	databaseURL string,
 	databaseType databasetype.DatabaseType,
 	tables ...any,
-) error {
+) (*gorm.DB, error) {
 	driver, err := databaseType.GetDriver(databaseURL)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	DB, err = gorm.Open(
+	db, err := gorm.Open(
 		driver,
 		&gorm.Config{},
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// Create Tables
-	err = DB.AutoMigrate(tables...)
-	return err
+	err = db.AutoMigrate(tables...)
+	return db, err
 }
 
 // Close closes the connection
-func Close() error {
-	sql, err := DB.DB()
+func Close(
+	db *gorm.DB,
+) error {
+	sql, err := db.DB()
 	if err != nil {
 		return err
 	}
@@ -48,6 +50,7 @@ func Close() error {
 // AddNewAgentProfile creates new profile
 func AddNewAgentProfile(
 	ctx context.Context,
+	db *gorm.DB,
 	personality *ocean.Personality,
 	apiKey string,
 ) error {
@@ -59,7 +62,7 @@ func AddNewAgentProfile(
 		return err
 	}
 	// Checks if this agent already exists
-	result, err := gorm.G[profile.AgentProfile](DB).Where(
+	result, err := gorm.G[profile.AgentProfile](db).Where(
 		&profile.AgentProfile{
 			APIKey: apiKey,
 		},
@@ -74,7 +77,7 @@ func AddNewAgentProfile(
 		)
 	}
 	// Create
-	err = gorm.G[profile.AgentProfile](DB).Create(
+	err = gorm.G[profile.AgentProfile](db).Create(
 		ctx,
 		newAgentProfile,
 	)

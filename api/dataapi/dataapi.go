@@ -1,7 +1,7 @@
 package dataapi
 
 import (
-	"github.com/1Vewton/EmotionServer/api"
+	"github.com/1Vewton/EmotionServer/api/response"
 	"github.com/1Vewton/EmotionServer/internal/ocean"
 	"github.com/1Vewton/EmotionServer/pkg/database"
 	"github.com/gin-gonic/gin"
@@ -23,7 +23,7 @@ func AddAgentProfile(
 	var query NewAgentProfileQuery
 	err := c.ShouldBindJSON(&query)
 	if err != nil {
-		api.NewResponse(
+		response.NewResponse(
 			c,
 			400,
 			false,
@@ -41,11 +41,12 @@ func AddAgentProfile(
 	)
 	err = database.AddNewAgentProfile(
 		c,
+		database.DB,
 		personality,
 		query.APIKey,
 	)
 	if err != nil {
-		api.NewResponse(
+		response.NewResponse(
 			c,
 			500,
 			false,
@@ -54,7 +55,7 @@ func AddAgentProfile(
 		)
 		return
 	}
-	api.NewResponse(
+	response.NewResponse(
 		c,
 		201,
 		true,

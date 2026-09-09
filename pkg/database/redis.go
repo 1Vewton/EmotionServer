@@ -19,8 +19,8 @@ func InitRedisClient(
 	maxRetries int,
 	maxRetryBackoff int,
 	minRetryBackoff int,
-) {
-	RedisClient = redis.NewClient(
+) *redis.Client {
+	return redis.NewClient(
 		&redis.Options{
 			Addr:            address,
 			Password:        password,
@@ -37,7 +37,9 @@ func InitRedisClient(
 }
 
 // CloseRedis closes the redis client
-func CloseRedis() error {
-	err := RedisClient.Close()
+func CloseRedis(
+	client *redis.Client,
+) error {
+	err := client.Close()
 	return err
 }

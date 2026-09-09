@@ -3,7 +3,7 @@ package utilapi
 import (
 	"net/http"
 
-	"github.com/1Vewton/EmotionServer/api"
+	"github.com/1Vewton/EmotionServer/api/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,7 +17,7 @@ import (
 // @Success 200 {object} api.Response
 // @Router /v1/utils/health [get]
 func CheckHealth(c *gin.Context) {
-	api.NewResponse(
+	response.NewResponse(
 		c,
 		http.StatusOK,
 		true,

@@ -11,16 +11,12 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/1Vewton/EmotionServer/api/dataapi"
-	"github.com/1Vewton/EmotionServer/api/utilapi"
-	"github.com/1Vewton/EmotionServer/docs"
+	"github.com/1Vewton/EmotionServer/api"
 	"github.com/1Vewton/EmotionServer/internal/profile"
 	"github.com/1Vewton/EmotionServer/pkg/database"
 	"github.com/1Vewton/EmotionServer/pkg/logger"
 	"github.com/1Vewton/EmotionServer/pkg/settings"
 	"github.com/gin-gonic/gin"
-	swaggerfiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // @title Emotion Simulator
@@ -35,12 +31,16 @@ import (
 // @license.name MIT
 func main() {
 	ctx := context.Background()
-	database.Connect(
+	db, err := database.Connect(
 		settings.Settings.GetDatabaseURL(),
 		settings.Settings.GetDatabaseType(),
 		&profile.AgentProfile{},
 	)
-	database.InitRedisClient(
+	if err != nil {
+		panic(err)
+	}
+	database.DB = db
+	database.RedisClient = database.InitRedisClient(
 		settings.Settings.GetDatabaseURL(),
 		settings.Settings.GetRedisPassword(),
 		settings.Settings.GetRedisDialTimeout(),
@@ -60,20 +60,7 @@ func main() {
 		os.Stdout,
 	)
 	// Define router
-	router := gin.Default()
-	docs.SwaggerInfo.BasePath = "/"
-	apiV1 := router.Group("/v1")
-	apiV1.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
-	utilRouter := apiV1.Group("/utils")
-	utilRouter.GET(
-		"/health",
-		utilapi.CheckHealth,
-	)
-	dataRouter := apiV1.Group("/data")
-	dataRouter.POST(
-		"/addAgentProfile",
-		dataapi.AddAgentProfile,
-	)
+	router := api.SetUpRouter()
 	// Define server
 	address := settings.Settings.GetServerURL()
 	logger.SysLogger.Info(
@@ -108,12 +95,14 @@ func main() {
 		logger.SysLogger.Error(err.Error())
 	}
 	logger.SysLogger.Info("Start closing database connection")
-	err = database.Close()
+	err = database.Close(database.DB)
 	if err != nil {
 		logger.SysLogger.Error(err.Error())
 	}
 	logger.SysLogger.Info("Start closing redis connection")
-	err = database.CloseRedis()
+	err = database.CloseRedis(
+		database.RedisClient,
+	)
 	if err != nil {
 		logger.SysLogger.Error(err.Error())
 	}

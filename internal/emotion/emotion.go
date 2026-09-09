@@ -9,11 +9,11 @@ import (
 
 // Emotion defines the emotion
 type Emotion struct {
-	Pleasure  float64
-	Arousal   float64
-	Dominance float64
-	Certainty float64
-	Novelty   float64
+	Pleasure  float64 `json:"pleasure"`
+	Arousal   float64 `json:"arousal"`
+	Dominance float64 `json:"dominance"`
+	Certainty float64 `json:"certainty"`
+	Novelty   float64 `json:"novelty"`
 }
 
 // NewEmotion creates new PADCN emotion status

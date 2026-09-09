@@ -10,7 +10,7 @@ import (
 // TestConnection tests the connection
 func TestConnection(t *testing.T) {
 	t.Parallel()
-	err := Connect(
+	tDB, err := Connect(
 		"file::memory:?cache=shared",
 		databasetype.Sqlite,
 		&profile.AgentProfile{},
@@ -18,5 +18,8 @@ func TestConnection(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	Close()
+	err = Close(tDB)
+	if err != nil {
+		t.Error(err)
+	}
 }
