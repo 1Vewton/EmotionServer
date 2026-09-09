@@ -40,6 +40,16 @@ func main() {
 		settings.Settings.GetDatabaseType(),
 		&profile.AgentProfile{},
 	)
+	database.InitRedisClient(
+		settings.Settings.GetDatabaseURL(),
+		settings.Settings.GetRedisPassword(),
+		settings.Settings.GetRedisDialTimeout(),
+		settings.Settings.GetRedisReadTimeout(),
+		settings.Settings.GetRedisWriteTimeout(),
+		settings.Settings.GetRedisMaxRetries(),
+		settings.Settings.GetRedisMaxRetryBackOff(),
+		settings.Settings.GetRedisMinRetryBackOff(),
+	)
 	gin.DisableConsoleColor()
 	file, err := os.Create("server.log")
 	if err != nil {
@@ -93,7 +103,18 @@ func main() {
 	)
 	<-c
 	logger.SysLogger.Info("Start closing program")
-	srv.Shutdown(ctx)
-	logger.SysLogger.Info("Start cleaning database")
-	database.Close()
+	err = srv.Shutdown(ctx)
+	if err != nil {
+		logger.SysLogger.Error(err.Error())
+	}
+	logger.SysLogger.Info("Start closing database connection")
+	err = database.Close()
+	if err != nil {
+		logger.SysLogger.Error(err.Error())
+	}
+	logger.SysLogger.Info("Start closing redis connection")
+	err = database.CloseRedis()
+	if err != nil {
+		logger.SysLogger.Error(err.Error())
+	}
 }

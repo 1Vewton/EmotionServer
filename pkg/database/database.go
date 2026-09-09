@@ -36,16 +36,13 @@ func Connect(
 }
 
 // Close closes the connection
-func Close() {
+func Close() error {
 	sql, err := DB.DB()
 	if err != nil {
-		fmt.Println(err.Error())
-		return
+		return err
 	}
 	err = sql.Close()
-	if err != nil {
-		fmt.Println(err.Error())
-	}
+	return err
 }
 
 // AddNewAgentProfile creates new profile
@@ -61,6 +58,7 @@ func AddNewAgentProfile(
 	if err != nil {
 		return err
 	}
+	// Checks if this agent already exists
 	result, err := gorm.G[profile.AgentProfile](DB).Where(
 		&profile.AgentProfile{
 			APIKey: apiKey,
@@ -75,6 +73,7 @@ func AddNewAgentProfile(
 			apiKey,
 		)
 	}
+	// Create
 	err = gorm.G[profile.AgentProfile](DB).Create(
 		ctx,
 		newAgentProfile,

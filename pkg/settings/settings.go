@@ -9,10 +9,18 @@ import (
 
 // settings stores the config of the program
 type settings struct {
-	serverPort   *string
-	serverHost   *string
-	databaseURL  *string
-	databaseType *int
+	serverPort           *string
+	serverHost           *string
+	databaseURL          *string
+	databaseType         *int
+	redisURL             *string
+	redisPassword        *string
+	redisDialTimeout     *int
+	redisReadTimeout     *int
+	redisWriteTimeout    *int
+	redisMaxRetries      *int
+	redisMinRetryBackoff *int
+	redisMaxRetryBackoff *int
 }
 
 // Initialize reads the env file setted
@@ -65,5 +73,77 @@ func (s *settings) GetServerURL() string {
 		"%s:%s",
 		s.GetServerHost(),
 		s.GetServerPort(),
+	)
+}
+
+// GetRedisURL gets the url for the Redis
+func (cfg *settings) GetRedisURL() string {
+	return SetConfigString(
+		"REDIS_URL",
+		"localhost:6379",
+		&cfg.redisURL,
+	)
+}
+
+// GetRedisPassword gets the url for the Redis
+func (cfg *settings) GetRedisPassword() string {
+	return SetConfigString(
+		"REDIS_PASSWORD",
+		"",
+		&cfg.redisPassword,
+	)
+}
+
+// GetRedisDialTimeout gets the Dial Timeout for the Redis
+func (cfg *settings) GetRedisDialTimeout() int {
+	return SetConfigInteger(
+		"REDIS_DIAL_TIMEOUT",
+		10,
+		&cfg.redisDialTimeout,
+	)
+}
+
+// GetRedisReadTimeout gets the Read Timeout for the Redis
+func (cfg *settings) GetRedisReadTimeout() int {
+	return SetConfigInteger(
+		"REDIS_READ_TIMEOUT",
+		5,
+		&cfg.redisReadTimeout,
+	)
+}
+
+// GetRedisWriteTimeout gets the Write Timeout for the Redis
+func (cfg *settings) GetRedisWriteTimeout() int {
+	return SetConfigInteger(
+		"REDIS_WRITE_TIMEOUT",
+		5,
+		&cfg.redisWriteTimeout,
+	)
+}
+
+// GetRedisMaxRetries gets the max retries for the Redis
+func (cfg *settings) GetRedisMaxRetries() int {
+	return SetConfigInteger(
+		"REDIS_MAX_RETRIES",
+		5,
+		&cfg.redisMaxRetries,
+	)
+}
+
+// GetRedisMaxRetryBackOff gets the max retry backoff for the Redis
+func (cfg *settings) GetRedisMaxRetryBackOff() int {
+	return SetConfigInteger(
+		"REDIS_MAX_RETRY_BACKOFF",
+		100,
+		&cfg.redisMaxRetryBackoff,
+	)
+}
+
+// GetRedisMinRetryBackOff gets the min retry backoff for the Redis
+func (cfg *settings) GetRedisMinRetryBackOff() int {
+	return SetConfigInteger(
+		"REDIS_MIN_RETRY_BACKOFF",
+		10,
+		&cfg.redisMinRetryBackoff,
 	)
 }
