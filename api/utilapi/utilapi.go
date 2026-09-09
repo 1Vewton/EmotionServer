@@ -15,7 +15,7 @@ import (
 // @Accept json
 // @Produce json
 // @Success 200 {object} api.Response
-// @Router /utils/health [get]
+// @Router /v1/utils/health [get]
 func CheckHealth(c *gin.Context) {
 	api.NewResponse(
 		c,

@@ -1,3 +1,5 @@
+//go:build !gRPC
+
 package main
 
 import (
@@ -9,6 +11,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/1Vewton/EmotionServer/api/dataapi"
 	"github.com/1Vewton/EmotionServer/api/utilapi"
 	"github.com/1Vewton/EmotionServer/docs"
 	"github.com/1Vewton/EmotionServer/internal/profile"
@@ -49,11 +52,17 @@ func main() {
 	// Define router
 	router := gin.Default()
 	docs.SwaggerInfo.BasePath = "/"
-	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
-	utilRouter := router.Group("/utils")
+	apiV1 := router.Group("/v1")
+	apiV1.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	utilRouter := apiV1.Group("/utils")
 	utilRouter.GET(
 		"/health",
 		utilapi.CheckHealth,
+	)
+	dataRouter := apiV1.Group("/data")
+	dataRouter.POST(
+		"/addAgentProfile",
+		dataapi.AddAgentProfile,
 	)
 	// Define server
 	address := settings.Settings.GetServerURL()

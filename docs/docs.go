@@ -23,7 +23,41 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/utils/health": {
+        "/v1/data/addAgentProfile": {
+            "post": {
+                "description": "Adds profile for agent",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "example"
+                ],
+                "summary": "Adds profile for agent",
+                "parameters": [
+                    {
+                        "description": "Query parameters",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dataapi.NewAgentProfileQuery"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/utils/health": {
             "get": {
                 "description": "check health",
                 "consumes": [
@@ -57,6 +91,29 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "dataapi.NewAgentProfileQuery": {
+            "type": "object",
+            "properties": {
+                "agreeableness": {
+                    "type": "number"
+                },
+                "api_key": {
+                    "type": "string"
+                },
+                "conscientiousness": {
+                    "type": "number"
+                },
+                "extraversion": {
+                    "type": "number"
+                },
+                "neuroticism": {
+                    "type": "number"
+                },
+                "openness": {
+                    "type": "number"
                 }
             }
         }

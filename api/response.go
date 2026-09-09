@@ -6,9 +6,9 @@ import (
 
 // Response defines the basic response of the response
 type Response struct {
-	Success bool    `json:"success"`
-	Error   *string `json:"error"`
-	Data    any     `json:"data"`
+	Success bool    `json:"success" form:"success"`
+	Error   *string `json:"error" form:"error"`
+	Data    any     `json:"data" form:"data"`
 }
 
 // NewResponse creates response

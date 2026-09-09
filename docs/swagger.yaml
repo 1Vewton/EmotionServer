@@ -7,6 +7,21 @@ definitions:
       success:
         type: boolean
     type: object
+  dataapi.NewAgentProfileQuery:
+    properties:
+      agreeableness:
+        type: number
+      api_key:
+        type: string
+      conscientiousness:
+        type: number
+      extraversion:
+        type: number
+      neuroticism:
+        type: number
+      openness:
+        type: number
+    type: object
 info:
   contact:
     email: zhanyunze0601@gmai.com
@@ -19,7 +34,29 @@ info:
   title: Emotion Simulator
   version: "1.0"
 paths:
-  /utils/health:
+  /v1/data/addAgentProfile:
+    post:
+      consumes:
+      - application/json
+      description: Adds profile for agent
+      parameters:
+      - description: Query parameters
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/dataapi.NewAgentProfileQuery'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.Response'
+      summary: Adds profile for agent
+      tags:
+      - example
+  /v1/utils/health:
     get:
       consumes:
       - application/json
