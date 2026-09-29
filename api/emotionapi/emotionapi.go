@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// RegisterEmotion
+// RegisterEmotion registers emotion context
 // @Summary Registers new emotion while returning a context id in the result
 // @Schemes
 // @Description Registers new emotion while returning a context id in the result
