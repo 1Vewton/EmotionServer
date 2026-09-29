@@ -16,6 +16,11 @@ type AgentProfile struct {
 	Personality    *ocean.Personality `gorm:"embedded"`
 }
 
+// TableName overrides the table name
+func (profile *AgentProfile) TableName() string {
+	return "AgentProfile"
+}
+
 // Equals tests if two profiles are equal
 func (profile *AgentProfile) Equals(
 	another *AgentProfile,
