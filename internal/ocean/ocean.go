@@ -25,3 +25,14 @@ func NewPersonality(
 		Neuroticism:       min(max(neuroticism, -1.0), 1.0),
 	}
 }
+
+// Equals tests if two personalities are the same
+func (personality *Personality) Equals(
+	another *Personality,
+) bool {
+	return personality.Openness == another.Openness &&
+		personality.Conscientiousness == another.Conscientiousness &&
+		personality.Extraversion == another.Extraversion &&
+		personality.Agreeableness == another.Agreeableness &&
+		personality.Neuroticism == another.Neuroticism
+}

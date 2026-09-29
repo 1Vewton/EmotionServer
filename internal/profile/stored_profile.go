@@ -12,3 +12,14 @@ type StoredProfile struct {
 	InitialEmotion  *emotion.Emotion `json:"initial_emotion"`
 	CurrentEmotion  *emotion.Emotion `json:"curent_emotion"`
 }
+
+// NewStoredProfile creates new stored profile
+func NewStoredProfile(
+	InitialEmotion *emotion.Emotion,
+) *StoredProfile {
+	return &StoredProfile{
+		LastUpdatedTime: time.Now(),
+		InitialEmotion:  InitialEmotion,
+		CurrentEmotion: InitialEmotion,
+	}
+}

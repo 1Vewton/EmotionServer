@@ -1,9 +1,12 @@
 package database
 
 import (
+	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 )
 
 // RedisClient defines the client for redis
@@ -34,6 +37,47 @@ func InitRedisClient(
 			MinRetryBackoff: time.Duration(minRetryBackoff) * time.Millisecond,
 		},
 	)
+}
+
+// NewContext creates new context
+func NewContext(
+	ctx context.Context,
+	client *redis.Client,
+	db *gorm.DB,
+	apiKey string,
+	contextID string,
+) error {
+	storedProfile := SearchAgentProfile(
+		db,
+		apiKey,
+	)
+	stringResult, err := json.Marshal(
+		storedProfile,
+	)
+	if err != nil {
+		return err
+	}
+	// Adds new context
+	key := GetEmotionToken(
+		apiKey,
+		contextID,
+	)
+	exists, err := client.Exists(
+		ctx,
+		key,
+	).Result()
+	if err != nil {
+		return err
+	}
+	if exists == 0 {
+		_, err = client.HSet(
+			ctx,
+			key,
+			stringResult,
+		).Result()
+		return err
+	}
+	return nil
 }
 
 // CloseRedis closes the redis client

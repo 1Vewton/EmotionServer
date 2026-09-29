@@ -16,6 +16,16 @@ type AgentProfile struct {
 	Personality    *ocean.Personality `gorm:"embedded"`
 }
 
+// Equals tests if two profiles are equal
+func (profile *AgentProfile) Equals(
+	another *AgentProfile,
+) bool {
+	return profile.InitialEmotion.Equals(another.InitialEmotion) &&
+		profile.Personality.Equals(another.Personality) &&
+		profile.ID == another.ID &&
+		profile.APIKey == another.APIKey
+}
+
 // NewAgentProfile creates new agent profile
 func NewAgentProfile(
 	apiKey string,
@@ -32,4 +42,13 @@ func NewAgentProfile(
 		InitialEmotion: initialEmotion,
 		Personality:    personality,
 	}, nil
+}
+
+// GetSearchProfileByAPIKeySentence gets the sentence for searching agent profile
+func GetSearchProfileByAPIKeySentence(
+	apiKey string,
+) *AgentProfile {
+	return &AgentProfile{
+		APIKey: apiKey,
+	}
 }
