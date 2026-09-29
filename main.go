@@ -89,11 +89,6 @@ func main() {
 		syscall.SIGTERM,
 	)
 	<-c
-	logger.SysLogger.Info("Start closing program")
-	err = srv.Shutdown(ctx)
-	if err != nil {
-		logger.SysLogger.Error(err.Error())
-	}
 	logger.SysLogger.Info("Start closing database connection")
 	err = database.Close(database.DB)
 	if err != nil {
@@ -103,6 +98,11 @@ func main() {
 	err = database.CloseRedis(
 		database.RedisClient,
 	)
+	if err != nil {
+		logger.SysLogger.Error(err.Error())
+	}
+	logger.SysLogger.Info("Start closing program")
+	err = srv.Shutdown(ctx)
 	if err != nil {
 		logger.SysLogger.Error(err.Error())
 	}

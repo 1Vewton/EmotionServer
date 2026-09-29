@@ -11,7 +11,6 @@ import (
 
 // TestConnection tests the connection
 func TestConnection(t *testing.T) {
-	t.Parallel()
 	tDB, err := Connect(
 		"file::memory:?cache=shared",
 		databasetype.Sqlite,
@@ -28,7 +27,6 @@ func TestConnection(t *testing.T) {
 
 // TestProfileFetching tests the fetching for profile
 func TestProfileFetching(t *testing.T) {
-	t.Parallel()
 	ctx := t.Context()
 	id := uuid.NewString()
 	tDB, err := Connect(
