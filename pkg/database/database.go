@@ -1,11 +1,6 @@
 package database
 
 import (
-	"context"
-	"fmt"
-
-	"github.com/1Vewton/EmotionServer/internal/ocean"
-	"github.com/1Vewton/EmotionServer/internal/profile"
 	"github.com/1Vewton/EmotionServer/pkg/databasetype"
 	"gorm.io/gorm"
 )
@@ -45,55 +40,4 @@ func Close(
 	}
 	err = sql.Close()
 	return err
-}
-
-// AddNewAgentProfile creates new profile
-func AddNewAgentProfile(
-	ctx context.Context,
-	db *gorm.DB,
-	personality *ocean.Personality,
-	apiKey string,
-) error {
-	newAgentProfile, err := profile.NewAgentProfile(
-		apiKey,
-		personality,
-	)
-	if err != nil {
-		return err
-	}
-	// Checks if this agent already exists
-	result, err := gorm.G[profile.AgentProfile](db).Where(
-		&profile.AgentProfile{
-			APIKey: apiKey,
-		},
-	).Find(ctx)
-	if err != nil {
-		return err
-	}
-	if len(result) > 0 {
-		return fmt.Errorf(
-			"agent with api %s already exists",
-			apiKey,
-		)
-	}
-	// Create
-	err = gorm.G[profile.AgentProfile](db).Create(
-		ctx,
-		newAgentProfile,
-	)
-	return err
-}
-
-// SearchAgentProfile searches profile for agent
-func SearchAgentProfile(
-	ctx context.Context,
-	db *gorm.DB,
-	apiKey string,
-) (*profile.AgentProfile, error) {
-	fetchedProfile, err := gorm.G[*profile.AgentProfile](db).Where(
-		&profile.AgentProfile{
-			APIKey: apiKey,
-		},
-	).First(ctx)
-	return fetchedProfile, err
 }

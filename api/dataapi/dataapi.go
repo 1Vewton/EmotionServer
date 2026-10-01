@@ -2,8 +2,8 @@ package dataapi
 
 import (
 	"github.com/1Vewton/EmotionServer/api/response"
+	"github.com/1Vewton/EmotionServer/internal/manager"
 	"github.com/1Vewton/EmotionServer/internal/ocean"
-	"github.com/1Vewton/EmotionServer/pkg/database"
 	"github.com/gin-gonic/gin"
 )
 
@@ -39,9 +39,8 @@ func AddAgentProfile(
 		query.Agreeableness,
 		query.Neuroticism,
 	)
-	err = database.AddNewAgentProfile(
+	err = manager.MainAgentProfileManager.AddNewAgentProfile(
 		c,
-		database.DB,
 		personality,
 		query.APIKey,
 	)

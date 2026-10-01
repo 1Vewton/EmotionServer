@@ -12,6 +12,7 @@ import (
 	"syscall"
 
 	"github.com/1Vewton/EmotionServer/api"
+	"github.com/1Vewton/EmotionServer/internal/manager"
 	"github.com/1Vewton/EmotionServer/internal/profile"
 	"github.com/1Vewton/EmotionServer/pkg/database"
 	"github.com/1Vewton/EmotionServer/pkg/logger"
@@ -39,6 +40,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	manager.MainAgentProfileManager = manager.NewAgentProfileManager(
+		db,
+	)
 	database.DB = db
 	database.RedisClient = database.NewRedisConfig(
 		settings.Settings.GetDatabaseURL(),
@@ -56,6 +60,10 @@ func main() {
 	).WithMinRetryBackoff(
 		settings.Settings.GetRedisMinRetryBackOff(),
 	).ToClient()
+	manager.MainContextManager = manager.NewContextManager(
+		database.RedisClient,
+		manager.MainAgentProfileManager,
+	)
 	gin.DisableConsoleColor()
 	file, err := os.Create("server.log")
 	if err != nil {
