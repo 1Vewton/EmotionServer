@@ -54,7 +54,7 @@ func NewContext(
 			stringResult,
 			0,
 		).Result()
-		return "", err
+		return key, err
 	}
 	return key, nil
 }
