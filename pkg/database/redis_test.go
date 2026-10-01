@@ -56,7 +56,7 @@ func TestContextCRUD(t *testing.T) {
 	}
 	// connect to the redis
 	resultClient := NewRedisConfig(
-		"localhost:6379",
+		"0.0.0.0:6379",
 		"",
 	).WithDialTimeout(
 		5,
