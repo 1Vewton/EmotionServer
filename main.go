@@ -40,16 +40,22 @@ func main() {
 		panic(err)
 	}
 	database.DB = db
-	database.RedisClient = database.InitRedisClient(
+	database.RedisClient = database.NewRedisConfig(
 		settings.Settings.GetDatabaseURL(),
 		settings.Settings.GetRedisPassword(),
+	).WithDialTimeout(
 		settings.Settings.GetRedisDialTimeout(),
-		settings.Settings.GetRedisReadTimeout(),
+	).WithWriteTimeout(
 		settings.Settings.GetRedisWriteTimeout(),
+	).WithReadTimeout(
+		settings.Settings.GetRedisReadTimeout(),
+	).WithMaxRetries(
 		settings.Settings.GetRedisMaxRetries(),
+	).WithMaxRetryBackoff(
 		settings.Settings.GetRedisMaxRetryBackOff(),
+	).WithMinRetryBackoff(
 		settings.Settings.GetRedisMinRetryBackOff(),
-	)
+	).ToClient()
 	gin.DisableConsoleColor()
 	file, err := os.Create("server.log")
 	if err != nil {

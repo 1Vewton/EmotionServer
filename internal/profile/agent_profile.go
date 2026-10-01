@@ -1,6 +1,8 @@
 package profile
 
 import (
+	"time"
+
 	"github.com/1Vewton/EmotionServer/internal/emotion"
 	"github.com/1Vewton/EmotionServer/internal/ocean"
 	"github.com/google/uuid"
@@ -24,6 +26,15 @@ func (profile *AgentProfile) Equals(
 		profile.Personality.Equals(another.Personality) &&
 		profile.ID == another.ID &&
 		profile.APIKey == another.APIKey
+}
+
+// ToStoredProfile converts AgentProfile to StoredProfile
+func (profile *AgentProfile) ToStoredProfile() *StoredProfile {
+	return &StoredProfile{
+		LastUpdatedTime: time.Now(),
+		InitialEmotion:  profile.InitialEmotion.Copy(),
+		CurrentEmotion:  profile.InitialEmotion.Copy(),
+	}
 }
 
 // NewAgentProfile creates new agent profile

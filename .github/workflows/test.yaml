@@ -6,9 +6,19 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        redis-version: [5]
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+    
+    - name: Start Redis
+      uses: supercharge/redis-github-action@1.8.1
+      with:
+        redis-version: ${{ matrix.redis-version }}
+        redis-port: 6379
 
     - name: Set up Go
       uses: actions/setup-go@v5

@@ -3,41 +3,14 @@ package database
 import (
 	"context"
 	"encoding/json"
-	"time"
 
+	"github.com/1Vewton/EmotionServer/internal/profile"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 // RedisClient defines the client for redis
 var RedisClient *redis.Client
-
-// InitRedisClient inits the redis client
-func InitRedisClient(
-	address string,
-	password string,
-	dialTimeout int,
-	readTimeout int,
-	writeTimeout int,
-	maxRetries int,
-	maxRetryBackoff int,
-	minRetryBackoff int,
-) *redis.Client {
-	return redis.NewClient(
-		&redis.Options{
-			Addr:            address,
-			Password:        password,
-			DB:              0,
-			Protocol:        2,
-			DialTimeout:     time.Duration(dialTimeout) * time.Second,
-			ReadTimeout:     time.Duration(readTimeout) * time.Second,
-			WriteTimeout:    time.Duration(writeTimeout) * time.Second,
-			MaxRetries:      maxRetries,
-			MaxRetryBackoff: time.Duration(maxRetryBackoff) * time.Millisecond,
-			MinRetryBackoff: time.Duration(minRetryBackoff) * time.Millisecond,
-		},
-	)
-}
 
 // NewContext creates new context
 func NewContext(
@@ -46,16 +19,21 @@ func NewContext(
 	db *gorm.DB,
 	apiKey string,
 	contextID string,
-) error {
-	storedProfile := SearchAgentProfile(
+) (string, error) {
+	agentProfile, err := SearchAgentProfile(
+		ctx,
 		db,
 		apiKey,
 	)
+	if err != nil {
+		return "", err
+	}
+	storedProfile := agentProfile.ToStoredProfile()
 	stringResult, err := json.Marshal(
 		storedProfile,
 	)
 	if err != nil {
-		return err
+		return "", err
 	}
 	// Adds new context
 	key := GetEmotionToken(
@@ -67,17 +45,42 @@ func NewContext(
 		key,
 	).Result()
 	if err != nil {
-		return err
+		return "", err
 	}
 	if exists == 0 {
-		_, err = client.HSet(
+		_, err = client.Set(
 			ctx,
 			key,
 			stringResult,
+			0,
 		).Result()
-		return err
+		return "", err
 	}
-	return nil
+	return key, nil
+}
+
+// GetDataFromContext
+func GetDataFromContext(
+	ctx context.Context,
+	client *redis.Client,
+	contextID string,
+) (*profile.StoredProfile, error) {
+	var result *profile.StoredProfile
+	stringResult, err := client.Get(
+		ctx,
+		contextID,
+	).Result()
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(
+		[]byte(stringResult),
+		&result,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 // CloseRedis closes the redis client

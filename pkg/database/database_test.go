@@ -11,8 +11,9 @@ import (
 
 // TestConnection tests the connection
 func TestConnection(t *testing.T) {
+	t.Parallel()
 	tDB, err := Connect(
-		"file::memory:?cache=shared",
+		":memory:",
 		databasetype.Sqlite,
 		&profile.AgentProfile{},
 	)
@@ -27,10 +28,11 @@ func TestConnection(t *testing.T) {
 
 // TestProfileFetching tests the fetching for profile
 func TestProfileFetching(t *testing.T) {
+	t.Parallel()
 	ctx := t.Context()
 	id := uuid.NewString()
 	tDB, err := Connect(
-		"file::memory:?cache=shared",
+		":memory:",
 		databasetype.Sqlite,
 		&profile.AgentProfile{},
 	)
@@ -53,10 +55,14 @@ func TestProfileFetching(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	result := SearchAgentProfile(
+	result, err := SearchAgentProfile(
+		ctx,
 		tDB,
 		id,
 	)
+	if err != nil {
+		t.Error(err)
+	}
 	if !result.Personality.Equals(result.Personality) {
 		t.Error(
 			"the result fetched from two datas are not the same",

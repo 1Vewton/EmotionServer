@@ -86,12 +86,14 @@ func AddNewAgentProfile(
 
 // SearchAgentProfile searches profile for agent
 func SearchAgentProfile(
+	ctx context.Context,
 	db *gorm.DB,
 	apiKey string,
-) *profile.AgentProfile {
-	fetchedProfile := &profile.AgentProfile{}
-	db.Where(
-		profile.GetSearchProfileByAPIKeySentence(apiKey),
-	).First(&fetchedProfile)
-	return fetchedProfile
+) (*profile.AgentProfile, error) {
+	fetchedProfile, err := gorm.G[*profile.AgentProfile](db).Where(
+		&profile.AgentProfile{
+			APIKey: apiKey,
+		},
+	).First(ctx)
+	return fetchedProfile, err
 }

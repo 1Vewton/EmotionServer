@@ -93,3 +93,14 @@ func (emotion *Emotion) Equals(
 	}
 	return false
 }
+
+// Copy copies emotion
+func (emotion *Emotion) Copy() *Emotion {
+	return &Emotion{
+		Pleasure:  emotion.Pleasure,
+		Arousal:   emotion.Arousal,
+		Dominance: emotion.Dominance,
+		Certainty: emotion.Certainty,
+		Novelty:   emotion.Novelty,
+	}
+}
