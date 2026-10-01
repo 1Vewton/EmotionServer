@@ -74,15 +74,15 @@ func (manager *ContextManager) NewContext(
 	)
 }
 
-// GetDataFromContext
+// GetDataFromContext gets the stored profile from context key
 func (manager *ContextManager) GetDataFromContext(
 	ctx context.Context,
-	contextID string,
+	contextKey string,
 ) (*profile.StoredProfile, error) {
 	var result *profile.StoredProfile
 	stringResult, err := manager.client.Get(
 		ctx,
-		contextID,
+		contextKey,
 	).Result()
 	if err != nil {
 		return nil, err
