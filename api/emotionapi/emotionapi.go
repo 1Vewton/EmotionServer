@@ -12,7 +12,7 @@ import (
 // @Tags example
 // @Accept json
 // @Produce json
-// @Success 200 {object} api.Response
+// @Success 200 {object} response.Response
 // @Router /v1/data/addAgentProfile [post]
 // @Param req body NewContextQuery true "Query parameters"
 func RegisterEmotion(

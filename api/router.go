@@ -25,5 +25,9 @@ func SetUpRouter() *gin.Engine {
 		"/addAgentProfile",
 		dataapi.AddAgentProfile,
 	)
+	dataRouter.POST(
+		"/getAgentProfile",
+		dataapi.GetAgentProfile,
+	)
 	return router
 }

@@ -1,6 +1,7 @@
 package dataapi
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/1Vewton/EmotionServer/api/response"
@@ -9,6 +10,7 @@ import (
 	"github.com/1Vewton/EmotionServer/internal/profile"
 	"github.com/1Vewton/EmotionServer/pkg/settings"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // AddAgentProfile adds agent profile.
@@ -18,7 +20,7 @@ import (
 // @Tags example
 // @Accept json
 // @Produce json
-// @Success 200 {object} api.Response
+// @Success 200 {object} response.Response
 // @Router /v1/data/addAgentProfile [post]
 // @Param req body NewAgentProfileQuery true "Query parameters"
 func AddAgentProfile(
@@ -49,8 +51,12 @@ func AddAgentProfile(
 	} else {
 		defaultTime = time.Duration(*query.ContextLifeTimeInDays*24) * time.Hour
 	}
+	apiKey := uuid.NewString()
+	result := &NewAgentProfileResponse{
+		APIKey: apiKey,
+	}
 	newAgentProfile, err := profile.NewAgentProfile(
-		query.APIKey,
+		apiKey,
 		personality,
 		defaultTime,
 	)
@@ -58,7 +64,7 @@ func AddAgentProfile(
 		query.IsContextInfinite,
 	)
 	err = manager.MainAgentProfileManager.AddNewAgentProfile(
-		c,
+		c.Request.Context(),
 		newAgentProfile,
 	)
 	if err != nil {
@@ -75,7 +81,81 @@ func AddAgentProfile(
 		c,
 		201,
 		true,
+		result,
 		nil,
+	)
+}
+
+// SearchAgentProfile searches certain agent profile through api key
+// @Summary Searches profile for agent
+// @Schemes
+// @Description Searches profile for agent
+// @Tags example
+// @Accept json
+// @Produce json
+// @Success 200 {object} response.Response
+// @Router /v1/data/getAgentProfile [post]
+// @Param req body GetAgentProfileQuery true "Query parameters"
+func GetAgentProfile(
+	c *gin.Context,
+) {
+	var query GetAgentProfileQuery
+	err := c.ShouldBindJSON(&query)
+	if err != nil {
+		response.NewResponse(
+			c,
+			400,
+			false,
+			nil,
+			err,
+		)
+		return
+	}
+	exists, err := manager.MainAgentProfileManager.Exists(
+		c.Request.Context(),
+		query.APIKey,
+	)
+	if err != nil {
+		response.NewResponse(
+			c,
+			500,
+			false,
+			nil,
+			err,
+		)
+		return
+	}
+	if !exists {
+		response.NewResponse(
+			c,
+			404,
+			false,
+			nil,
+			fmt.Errorf(
+				"%s api key does not exists",
+				query.APIKey,
+			),
+		)
+	}
+	searchResult, err := manager.MainAgentProfileManager.SearchAgentProfile(
+		c.Request.Context(),
+		query.APIKey,
+	)
+	if err != nil {
+		response.NewResponse(
+			c,
+			500,
+			false,
+			nil,
+			err,
+		)
+		return
+	}
+	response.NewResponse(
+		c,
+		200,
+		true,
+		searchResult,
 		nil,
 	)
 }

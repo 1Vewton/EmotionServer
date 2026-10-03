@@ -25,7 +25,7 @@ const docTemplate = `{
     "paths": {
         "/v1/data/addAgentProfile": {
             "post": {
-                "description": "Adds profile for agent",
+                "description": "Registers new emotion while returning a context id in the result",
                 "consumes": [
                     "application/json"
                 ],
@@ -35,7 +35,7 @@ const docTemplate = `{
                 "tags": [
                     "example"
                 ],
-                "summary": "Adds profile for agent",
+                "summary": "Registers new emotion while returning a context id in the result",
                 "parameters": [
                     {
                         "description": "Query parameters",
@@ -43,7 +43,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dataapi.NewAgentProfileQuery"
+                            "$ref": "#/definitions/emotionapi.NewContextQuery"
                         }
                     }
                 ],
@@ -51,7 +51,41 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.Response"
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/data/getAgentProfile": {
+            "post": {
+                "description": "Searches profile for agent",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "example"
+                ],
+                "summary": "Searches profile for agent",
+                "parameters": [
+                    {
+                        "description": "Query parameters",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dataapi.SearchAgentProfileQuery"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -74,7 +108,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -82,7 +116,49 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "api.Response": {
+        "dataapi.NewAgentProfileQuery": {
+            "type": "object",
+            "properties": {
+                "agreeableness": {
+                    "type": "number"
+                },
+                "conscientiousness": {
+                    "type": "number"
+                },
+                "context_life_time_in_days": {
+                    "type": "integer"
+                },
+                "extraversion": {
+                    "type": "number"
+                },
+                "is_context_infinite": {
+                    "type": "boolean"
+                },
+                "neuroticism": {
+                    "type": "number"
+                },
+                "openness": {
+                    "type": "number"
+                }
+            }
+        },
+        "dataapi.SearchAgentProfileQuery": {
+            "type": "object",
+            "properties": {
+                "apikey": {
+                    "type": "string"
+                }
+            }
+        },
+        "emotionapi.NewContextQuery": {
+            "type": "object",
+            "properties": {
+                "api_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.Response": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -91,29 +167,6 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
-                }
-            }
-        },
-        "dataapi.NewAgentProfileQuery": {
-            "type": "object",
-            "properties": {
-                "agreeableness": {
-                    "type": "number"
-                },
-                "api_key": {
-                    "type": "string"
-                },
-                "conscientiousness": {
-                    "type": "number"
-                },
-                "extraversion": {
-                    "type": "number"
-                },
-                "neuroticism": {
-                    "type": "number"
-                },
-                "openness": {
-                    "type": "number"
                 }
             }
         }

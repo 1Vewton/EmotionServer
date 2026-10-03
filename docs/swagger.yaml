@@ -1,26 +1,38 @@
 definitions:
-  api.Response:
+  dataapi.NewAgentProfileQuery:
+    properties:
+      agreeableness:
+        type: number
+      conscientiousness:
+        type: number
+      context_life_time_in_days:
+        type: integer
+      extraversion:
+        type: number
+      is_context_infinite:
+        type: boolean
+      neuroticism:
+        type: number
+      openness:
+        type: number
+    type: object
+  dataapi.SearchAgentProfileQuery:
+    properties:
+      apikey:
+        type: string
+    type: object
+  emotionapi.NewContextQuery:
+    properties:
+      api_key:
+        type: string
+    type: object
+  response.Response:
     properties:
       data: {}
       error:
         type: string
       success:
         type: boolean
-    type: object
-  dataapi.NewAgentProfileQuery:
-    properties:
-      agreeableness:
-        type: number
-      api_key:
-        type: string
-      conscientiousness:
-        type: number
-      extraversion:
-        type: number
-      neuroticism:
-        type: number
-      openness:
-        type: number
     type: object
 info:
   contact:
@@ -38,22 +50,44 @@ paths:
     post:
       consumes:
       - application/json
-      description: Adds profile for agent
+      description: Registers new emotion while returning a context id in the result
       parameters:
       - description: Query parameters
         in: body
         name: req
         required: true
         schema:
-          $ref: '#/definitions/dataapi.NewAgentProfileQuery'
+          $ref: '#/definitions/emotionapi.NewContextQuery'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.Response'
-      summary: Adds profile for agent
+            $ref: '#/definitions/response.Response'
+      summary: Registers new emotion while returning a context id in the result
+      tags:
+      - example
+  /v1/data/getAgentProfile:
+    post:
+      consumes:
+      - application/json
+      description: Searches profile for agent
+      parameters:
+      - description: Query parameters
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/dataapi.SearchAgentProfileQuery'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Searches profile for agent
       tags:
       - example
   /v1/utils/health:
@@ -67,7 +101,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.Response'
+            $ref: '#/definitions/response.Response'
       summary: Checks health
       tags:
       - example
