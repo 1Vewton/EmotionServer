@@ -86,7 +86,7 @@ func AddAgentProfile(
 	)
 }
 
-// SearchAgentProfile searches certain agent profile through api key
+// GetAgentProfile searches certain agent profile through api key
 // @Summary Searches profile for agent
 // @Schemes
 // @Description Searches profile for agent
