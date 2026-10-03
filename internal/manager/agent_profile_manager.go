@@ -2,9 +2,9 @@ package manager
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
-	"github.com/1Vewton/EmotionServer/internal/ocean"
 	"github.com/1Vewton/EmotionServer/internal/profile"
 	"gorm.io/gorm"
 )
@@ -26,20 +26,17 @@ func NewAgentProfileManager(
 // AddNewAgentProfile creates new profile
 func (manager *AgentProfileManager) AddNewAgentProfile(
 	ctx context.Context,
-	personality *ocean.Personality,
-	apiKey string,
+	newAgentProfile *profile.AgentProfile,
 ) error {
-	newAgentProfile, err := profile.NewAgentProfile(
-		apiKey,
-		personality,
-	)
-	if err != nil {
-		return err
+	if newAgentProfile == nil {
+		return errors.New(
+			"you cannot pass a nil profile",
+		)
 	}
 	// Checks if this agent already exists
 	result, err := gorm.G[profile.AgentProfile](manager.db).Where(
 		&profile.AgentProfile{
-			APIKey: apiKey,
+			APIKey: newAgentProfile.APIKey,
 		},
 	).Find(ctx)
 	if err != nil {
@@ -48,7 +45,7 @@ func (manager *AgentProfileManager) AddNewAgentProfile(
 	if len(result) > 0 {
 		return fmt.Errorf(
 			"agent with api %s already exists",
-			apiKey,
+			newAgentProfile.APIKey,
 		)
 	}
 	// Create

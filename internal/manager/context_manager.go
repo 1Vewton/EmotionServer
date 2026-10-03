@@ -3,7 +3,8 @@ package manager
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"errors"
+	"time"
 
 	"github.com/1Vewton/EmotionServer/internal/profile"
 	"github.com/redis/go-redis/v9"
@@ -32,6 +33,7 @@ func (manager *ContextManager) NewContext(
 	ctx context.Context,
 	apiKey string,
 	contextID string,
+	orderedContextExistsTime *time.Duration,
 ) (string, error) {
 	agentProfile, err := manager.profileManager.SearchAgentProfile(
 		ctx,
@@ -39,6 +41,20 @@ func (manager *ContextManager) NewContext(
 	)
 	if err != nil {
 		return "", err
+	}
+	var contextExistsTime time.Duration
+	if orderedContextExistsTime != nil {
+		contextExistsTime = *orderedContextExistsTime
+	} else if agentProfile.IsContextInfinite {
+		contextExistsTime = 0
+	} else {
+		if agentProfile.ContextExistsTime != nil {
+			contextExistsTime = *agentProfile.ContextExistsTime
+		} else {
+			return "", errors.New(
+				"no context exists time is given",
+			)
+		}
 	}
 	storedProfile := agentProfile.ToStoredProfile()
 	stringResult, err := json.Marshal(
@@ -64,14 +80,29 @@ func (manager *ContextManager) NewContext(
 			ctx,
 			key,
 			stringResult,
-			0,
+			contextExistsTime,
 		).Result()
 		return key, err
 	}
-	return key, fmt.Errorf(
-		"context key of %s already exists",
-		key,
-	)
+	return key, nil
+}
+
+// HasContext checks if certain context exists
+func (manager *ContextManager) HasContext(
+	ctx context.Context,
+	contextKey string,
+) (bool, error) {
+	exists, err := manager.client.Exists(
+		ctx,
+		contextKey,
+	).Result()
+	if err != nil {
+		return false, err
+	}
+	if exists == 0 {
+		return false, nil
+	}
+	return true, nil
 }
 
 // GetDataFromContext gets the stored profile from context key

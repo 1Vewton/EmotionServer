@@ -1,9 +1,13 @@
 package dataapi
 
 import (
+	"time"
+
 	"github.com/1Vewton/EmotionServer/api/response"
 	"github.com/1Vewton/EmotionServer/internal/manager"
 	"github.com/1Vewton/EmotionServer/internal/ocean"
+	"github.com/1Vewton/EmotionServer/internal/profile"
+	"github.com/1Vewton/EmotionServer/pkg/settings"
 	"github.com/gin-gonic/gin"
 )
 
@@ -39,10 +43,23 @@ func AddAgentProfile(
 		query.Agreeableness,
 		query.Neuroticism,
 	)
+	var defaultTime time.Duration
+	if query.ContextLifeTimeInDays == nil {
+		defaultTime = settings.Settings.GetContextLastTimeInDays()
+	} else {
+		defaultTime = time.Duration(*query.ContextLifeTimeInDays*24) * time.Hour
+	}
+	newAgentProfile, err := profile.NewAgentProfile(
+		query.APIKey,
+		personality,
+		defaultTime,
+	)
+	newAgentProfile = newAgentProfile.SetIsContextInfinite(
+		query.IsContextInfinite,
+	)
 	err = manager.MainAgentProfileManager.AddNewAgentProfile(
 		c,
-		personality,
-		query.APIKey,
+		newAgentProfile,
 	)
 	if err != nil {
 		response.NewResponse(

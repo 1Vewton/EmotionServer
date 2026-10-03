@@ -2,6 +2,7 @@ package manager
 
 import (
 	"testing"
+	"time"
 
 	"github.com/1Vewton/EmotionServer/internal/ocean"
 	"github.com/1Vewton/EmotionServer/internal/profile"
@@ -33,10 +34,14 @@ func TestProfileFetching(t *testing.T) {
 		0.0,
 		0.0,
 	)
+	newProfile, err := profile.NewAgentProfile(
+		id,
+		mutualPersonality,
+		5*time.Minute,
+	)
 	err = newAgentProfileManager.AddNewAgentProfile(
 		ctx,
-		mutualPersonality,
-		id,
+		newProfile,
 	)
 	if err != nil {
 		t.Error(err)

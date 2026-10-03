@@ -12,10 +12,12 @@ import (
 // AgentProfile defines the profile for user to store in the database
 type AgentProfile struct {
 	gorm.Model
-	ID             string
-	APIKey         string             `gorm:"unique"`
-	InitialEmotion *emotion.Emotion   `gorm:"embedded"`
-	Personality    *ocean.Personality `gorm:"embedded"`
+	ID                string
+	APIKey            string             `gorm:"unique"`
+	InitialEmotion    *emotion.Emotion   `gorm:"embedded"`
+	Personality       *ocean.Personality `gorm:"embedded"`
+	IsContextInfinite bool
+	ContextExistsTime *time.Duration
 }
 
 // Equals tests if two profiles are equal
@@ -37,10 +39,23 @@ func (profile *AgentProfile) ToStoredProfile() *StoredProfile {
 	}
 }
 
+// SetIsContextInfinite sets whether the context is inifinite
+func (profile *AgentProfile) SetIsContextInfinite(
+	isInfinite bool,
+) *AgentProfile {
+	var infDuration time.Duration = 0
+	if isInfinite {
+		profile.ContextExistsTime = &infDuration
+	}
+	profile.IsContextInfinite = isInfinite
+	return profile
+}
+
 // NewAgentProfile creates new agent profile
 func NewAgentProfile(
 	apiKey string,
 	personality *ocean.Personality,
+	defaultTime time.Duration,
 ) (*AgentProfile, error) {
 	id := uuid.NewString()
 	initialEmotion, err := personality.GetInitialEmotion()
@@ -48,10 +63,12 @@ func NewAgentProfile(
 		return nil, err
 	}
 	return &AgentProfile{
-		ID:             id,
-		APIKey:         apiKey,
-		InitialEmotion: initialEmotion,
-		Personality:    personality,
+		ID:                id,
+		APIKey:            apiKey,
+		InitialEmotion:    initialEmotion,
+		Personality:       personality,
+		IsContextInfinite: false,
+		ContextExistsTime: &defaultTime,
 	}, nil
 }
 

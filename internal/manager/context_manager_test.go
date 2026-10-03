@@ -2,6 +2,7 @@ package manager
 
 import (
 	"testing"
+	"time"
 
 	"github.com/1Vewton/EmotionServer/internal/ocean"
 	"github.com/1Vewton/EmotionServer/internal/profile"
@@ -33,10 +34,14 @@ func TestContextCRUD(t *testing.T) {
 		0.0,
 	)
 	apiKey := "test114514"
+	newProfile, err := profile.NewAgentProfile(
+		apiKey,
+		mutualPersonality,
+		5*time.Minute,
+	)
 	err = newAgentProfileManager.AddNewAgentProfile(
 		ctx,
-		mutualPersonality,
-		apiKey,
+		newProfile,
 	)
 	if err != nil {
 		t.Error(err)
@@ -66,9 +71,23 @@ func TestContextCRUD(t *testing.T) {
 		ctx,
 		apiKey,
 		ctxID,
+		nil,
 	)
 	if err != nil {
 		t.Error(err)
+	}
+	exists, err := newContextManager.HasContext(
+		ctx,
+		key,
+	)
+	if err != nil {
+		t.Error(err)
+	}
+	if !exists {
+		t.Errorf(
+			"it is suggested that %s does not exists or an error occurs in HasContext",
+			key,
+		)
 	}
 	resultData, err := newContextManager.GetDataFromContext(
 		ctx,

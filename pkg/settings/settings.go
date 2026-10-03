@@ -2,6 +2,7 @@ package settings
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/1Vewton/EmotionServer/pkg/databasetype"
 	"github.com/joho/godotenv"
@@ -9,18 +10,19 @@ import (
 
 // settings stores the config of the program
 type settings struct {
-	serverPort           *string
-	serverHost           *string
-	databaseURL          *string
-	databaseType         *int
-	redisURL             *string
-	redisPassword        *string
-	redisDialTimeout     *int
-	redisReadTimeout     *int
-	redisWriteTimeout    *int
-	redisMaxRetries      *int
-	redisMinRetryBackoff *int
-	redisMaxRetryBackoff *int
+	serverPort            *string
+	serverHost            *string
+	databaseURL           *string
+	databaseType          *int
+	redisURL              *string
+	redisPassword         *string
+	redisDialTimeout      *int
+	redisReadTimeout      *int
+	redisWriteTimeout     *int
+	redisMaxRetries       *int
+	redisMinRetryBackoff  *int
+	redisMaxRetryBackoff  *int
+	contextLastTimeInDays *int
 }
 
 // Initialize reads the env file setted
@@ -146,4 +148,14 @@ func (s *settings) GetRedisMinRetryBackOff() int {
 		10,
 		&s.redisMinRetryBackoff,
 	)
+}
+
+// GetContextLastTimeInDays gets the last time for context in days
+func (s *settings) GetContextLastTimeInDays() time.Duration {
+	daysNum := SetConfigInteger(
+		"CONTEXT_LAST_TIME_IN_DAYS",
+		7,
+		&s.redisMinRetryBackoff,
+	)
+	return time.Duration(daysNum) * 24 * time.Hour
 }
