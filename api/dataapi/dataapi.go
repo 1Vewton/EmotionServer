@@ -141,6 +141,13 @@ func GetAgentProfile(
 		c.Request.Context(),
 		query.APIKey,
 	)
+	returnedResult := &ReturnedAgentProfile{
+		ID:                searchResult.ID,
+		InitialEmotion:    searchResult.InitialEmotion,
+		Personality:       searchResult.Personality,
+		IsContextInfinite: searchResult.IsContextInfinite,
+		ContextExistsTime: searchResult.ContextExistsTime,
+	}
 	if err != nil {
 		response.NewResponse(
 			c,
@@ -155,7 +162,7 @@ func GetAgentProfile(
 		c,
 		200,
 		true,
-		searchResult,
+		returnedResult,
 		nil,
 	)
 }

@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/1Vewton/EmotionServer/api/dataapi"
+	"github.com/1Vewton/EmotionServer/api/emotionapi"
 	"github.com/1Vewton/EmotionServer/api/utilapi"
 	"github.com/1Vewton/EmotionServer/docs"
 	"github.com/gin-gonic/gin"
@@ -28,6 +29,11 @@ func SetUpRouter() *gin.Engine {
 	dataRouter.POST(
 		"/getAgentProfile",
 		dataapi.GetAgentProfile,
+	)
+	emotionRouter := apiV1.Group("/emotion")
+	emotionRouter.POST(
+		"/registerEmotion",
+		emotionapi.RegisterEmotion,
 	)
 	return router
 }

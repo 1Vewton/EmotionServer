@@ -127,7 +127,7 @@ func TestContextWithAgentProfile(t *testing.T) {
 	ctx := t.Context()
 	// connect to the redis
 	apiKey := uuid.NewString()
-	contextKey := uuid.NewString()
+	contextID := uuid.NewString()
 	redisclient := database.NewRedisConfig(
 		"localhost:6379",
 		"",
@@ -174,6 +174,15 @@ func TestContextWithAgentProfile(t *testing.T) {
 	err = testAgentProfile.AddNewAgentProfile(
 		ctx,
 		newAgentProfile,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	contextKey, err := newContextManager.NewContext(
+		ctx,
+		apiKey,
+		contextID,
+		nil,
 	)
 	if err != nil {
 		t.Fatal(err)

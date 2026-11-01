@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/1Vewton/EmotionServer/api/dataapi"
+	"github.com/1Vewton/EmotionServer/api/emotionapi"
 	"github.com/1Vewton/EmotionServer/api/response"
 	"github.com/1Vewton/EmotionServer/internal/manager"
 	"github.com/1Vewton/EmotionServer/internal/profile"
@@ -32,6 +33,32 @@ func TestRouter(t *testing.T) {
 		db,
 	)
 	router := SetUpRouter()
+	newAgentData := &dataapi.NewAgentProfileQuery{
+		Openness:          0.0,
+		Conscientiousness: 0.0,
+		Extraversion:      0.0,
+		Agreeableness:     0.0,
+		Neuroticism:       0.0,
+		IsContextInfinite: true,
+	}
+	redisclient := database.NewRedisConfig(
+		"localhost:6379",
+		"",
+	).WithDialTimeout(
+		5,
+	).WithReadTimeout(
+		5,
+	).WithMaxRetries(
+		3,
+	).WithMaxRetryBackoff(
+		5,
+	).WithMinRetryBackoff(
+		3,
+	).ToClient()
+	manager.MainContextManager = manager.NewContextManager(
+		redisclient,
+		manager.MainAgentProfileManager,
+	)
 	// TestCheckHealth tests the check health endpoint of the api
 	t.Run(
 		"TestCheckHealth",
@@ -69,20 +96,12 @@ func TestRouter(t *testing.T) {
 		"TestAgentProfileCRUD",
 		func(t *testing.T) {
 			var key string = ""
-			newData := dataapi.NewAgentProfileQuery{
-				Openness:          0.0,
-				Conscientiousness: 0.0,
-				Extraversion:      0.0,
-				Agreeableness:     0.0,
-				Neuroticism:       0.0,
-				IsContextInfinite: true,
-			}
 			// Creation test
 			t.Run(
 				"DataCreationTest",
 				func(t *testing.T) {
 					w := httptest.NewRecorder()
-					encodedData, err := json.Marshal(newData)
+					encodedData, err := json.Marshal(newAgentData)
 					if err != nil {
 						t.Error(err)
 					}
@@ -128,7 +147,7 @@ func TestRouter(t *testing.T) {
 							string(result),
 						)
 					}
-					rawKey, exists := respWithKey["api_key"]
+					rawKey, exists := respWithKey["APIKey"]
 					if !exists {
 						t.Error(
 							"cannot find the api key returned",
@@ -200,6 +219,95 @@ func TestRouter(t *testing.T) {
 					}
 				},
 			)
+		},
+	)
+	t.Run(
+		"TestEmotionCRUD",
+		func(t *testing.T) {
+			// Create the agent profile and creates the context
+			w := httptest.NewRecorder()
+			encodedData1, err := json.Marshal(
+				newAgentData,
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+			req, err := http.NewRequest(
+				"POST",
+				"/v1/data/addAgentProfile",
+				bytes.NewBuffer(encodedData1),
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+			router.ServeHTTP(
+				w,
+				req,
+			)
+			result := w.Body.Bytes()
+			var resp response.Response
+			err = json.Unmarshal(result, &resp)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !resp.Success {
+				t.Fatalf(
+					"the request is not successful due to %s",
+					*resp.Error,
+				)
+			}
+			processedData, ok := resp.Data.(map[string]any)
+			if !ok {
+				t.Fatalf(
+					"expected to be allowed to decode to new agent profile, resp data: %v",
+					resp.Data,
+				)
+			}
+			apiKey, ok := processedData["APIKey"].(string)
+			if !ok {
+				t.Fatalf(
+					"fetched data %v of api key cannot be converted to string",
+					processedData["APIKey"],
+				)
+			}
+			parameter := &emotionapi.NewContextQuery{
+				APIKey: apiKey,
+			}
+			decodedDataParameter, err := json.Marshal(parameter)
+			if err != nil {
+				t.Fatal(err)
+			}
+			w2 := httptest.NewRecorder()
+			req, err = http.NewRequest(
+				"POST",
+				"/v1/emotion/registerEmotion",
+				bytes.NewBuffer(decodedDataParameter),
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+			router.ServeHTTP(
+				w2,
+				req,
+			)
+			ctxResult := w2.Body.Bytes()
+			var respCtx response.Response
+			err = json.Unmarshal(
+				ctxResult,
+				&respCtx,
+			)
+			if err != nil {
+				t.Error(
+					string(ctxResult),
+				)
+				t.Fatal(err)
+			}
+			if !respCtx.Success {
+				t.Fatalf(
+					"the context generation is insuccess due to %s",
+					*respCtx.Error,
+				)
+			}
 		},
 	)
 	err = database.Close(db)
