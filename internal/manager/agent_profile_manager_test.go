@@ -63,3 +63,29 @@ func TestProfileFetching(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+// TestNoAgentProfile tests when there is actually no agent profile
+func TestNoAgentProfile(t *testing.T) {
+	t.Parallel()
+	ctx := t.Context()
+	tDB, err := database.Connect(
+		":memory:",
+		databasetype.Sqlite,
+		&profile.AgentProfile{},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testAgentProfile := NewAgentProfileManager(
+		tDB,
+	)
+	_, err = testAgentProfile.SearchAgentProfile(
+		ctx,
+		"114514",
+	)
+	if err == nil {
+		t.Fatal(
+			"expected to throw an error",
+		)
+	}
+}

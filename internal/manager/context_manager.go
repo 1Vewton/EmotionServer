@@ -27,6 +27,54 @@ func NewContextManager(
 	}
 }
 
+// ContextExistsWithAgentProfile checks if certain agent profile has context
+func (manager *ContextManager) ContextExistsWithAgentProfile(
+	ctx context.Context,
+	apiKey string,
+	contextKey string,
+) (bool, error) {
+	keyExists, err := manager.client.Exists(
+		ctx,
+		apiKey,
+	).Result()
+	if err != nil {
+		return false, err
+	}
+	if keyExists < 0 {
+		return false, nil
+	}
+	return manager.client.SIsMember(
+		ctx,
+		apiKey,
+		contextKey,
+	).Result()
+}
+
+// AddNewContextForProfile adds new context under an agent profile
+func (manager *ContextManager) AddNewContextForProfile(
+	ctx context.Context,
+	apiKey string,
+	contextKey string,
+) error {
+	exists, err := manager.ContextExistsWithAgentProfile(
+		ctx,
+		apiKey,
+		contextKey,
+	)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return nil
+	}
+	_, err = manager.client.SAdd(
+		ctx,
+		apiKey,
+		contextKey,
+	).Result()
+	return err
+}
+
 // NewContext creates new context
 // Return the context key
 func (manager *ContextManager) NewContext(
@@ -82,6 +130,11 @@ func (manager *ContextManager) NewContext(
 			stringResult,
 			contextExistsTime,
 		).Result()
+		manager.AddNewContextForProfile(
+			ctx,
+			apiKey,
+			key,
+		)
 		return key, err
 	}
 	return key, nil

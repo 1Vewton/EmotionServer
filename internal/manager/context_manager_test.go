@@ -8,6 +8,7 @@ import (
 	"github.com/1Vewton/EmotionServer/internal/profile"
 	"github.com/1Vewton/EmotionServer/pkg/database"
 	"github.com/1Vewton/EmotionServer/pkg/databasetype"
+	"github.com/google/uuid"
 )
 
 // TestContextCRUD tests the crud of the context
@@ -39,6 +40,9 @@ func TestContextCRUD(t *testing.T) {
 		mutualPersonality,
 		5*time.Minute,
 	)
+	if err != nil {
+		t.Fatal(err)
+	}
 	err = newAgentProfileManager.AddNewAgentProfile(
 		ctx,
 		newProfile,
@@ -114,5 +118,86 @@ func TestContextCRUD(t *testing.T) {
 	err = database.Close(tDB)
 	if err != nil {
 		t.Error(err)
+	}
+}
+
+// TestContextWithAgentProfile checks combination of context and agent profile
+func TestContextWithAgentProfile(t *testing.T) {
+	t.Parallel()
+	ctx := t.Context()
+	// connect to the redis
+	apiKey := uuid.NewString()
+	contextKey := uuid.NewString()
+	redisclient := database.NewRedisConfig(
+		"localhost:6379",
+		"",
+	).WithDialTimeout(
+		5,
+	).WithReadTimeout(
+		5,
+	).WithMaxRetries(
+		3,
+	).WithMaxRetryBackoff(
+		5,
+	).WithMinRetryBackoff(
+		3,
+	).ToClient()
+	tDB, err := database.Connect(
+		":memory:",
+		databasetype.Sqlite,
+		&profile.AgentProfile{},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	testAgentProfile := NewAgentProfileManager(
+		tDB,
+	)
+	newAgentProfile, err := profile.NewAgentProfile(
+		apiKey,
+		ocean.NewPersonality(
+			0.0,
+			0.0,
+			0.0,
+			0.0,
+			0.0,
+		),
+		5*time.Hour,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	newContextManager := NewContextManager(
+		redisclient,
+		testAgentProfile,
+	)
+	err = testAgentProfile.AddNewAgentProfile(
+		ctx,
+		newAgentProfile,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = newContextManager.AddNewContextForProfile(
+		ctx,
+		apiKey,
+		contextKey,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	exists, err := newContextManager.ContextExistsWithAgentProfile(
+		ctx,
+		apiKey,
+		contextKey,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !exists {
+		t.Fatalf(
+			"context with key %s expected to exists",
+			contextKey,
+		)
 	}
 }
