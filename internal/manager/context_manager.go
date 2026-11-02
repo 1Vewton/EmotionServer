@@ -52,21 +52,7 @@ func (manager *ContextManager) ContextExistsWithAgentProfile(
 	if err != nil {
 		return false, err
 	}
-	hasContext, err := manager.HasContext(
-		ctx,
-		contextKey,
-	)
-	if err != nil {
-		return false, err
-	}
-	if existsInProfileList && !hasContext {
-		manager.client.SRem(
-			ctx,
-			apiKey,
-			contextKey,
-		)
-	}
-	return hasContext && existsInProfileList, nil
+	return existsInProfileList, err
 }
 
 // AddNewContextForProfile adds new context under an agent profile

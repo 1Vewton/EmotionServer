@@ -209,4 +209,17 @@ func TestContextWithAgentProfile(t *testing.T) {
 			contextKey,
 		)
 	}
+	contextExists, err := newContextManager.HasContext(
+		ctx,
+		contextKey,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !contextExists {
+		t.Fatalf(
+			"this context %s just not exists",
+			contextKey,
+		)
+	}
 }
