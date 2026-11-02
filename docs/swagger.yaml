@@ -1,29 +1,41 @@
 definitions:
-  dataapi.NewAgentProfileQuery:
-    properties:
-      agreeableness:
-        type: number
-      conscientiousness:
-        type: number
-      context_life_time_in_days:
-        type: integer
-      extraversion:
-        type: number
-      is_context_infinite:
-        type: boolean
-      neuroticism:
-        type: number
-      openness:
-        type: number
-    type: object
-  dataapi.SearchAgentProfileQuery:
+  dataapi.GetAgentProfileQuery:
     properties:
       apikey:
         type: string
     type: object
+  dataapi.NewAgentProfileQuery:
+    properties:
+      agreeableness:
+        format: float64
+        type: number
+      conscientiousness:
+        format: float64
+        type: number
+      contextLifeTimeInDays:
+        type: integer
+      extraversion:
+        format: float64
+        type: number
+      isContextInfinite:
+        type: boolean
+      neuroticism:
+        format: float64
+        type: number
+      openness:
+        format: float64
+        type: number
+    type: object
+  emotionapi.GetCurrentEmotionQuery:
+    properties:
+      apikey:
+        type: string
+      contextKey:
+        type: string
+    type: object
   emotionapi.NewContextQuery:
     properties:
-      api_key:
+      apikey:
         type: string
     type: object
   response.Response:
@@ -50,6 +62,74 @@ paths:
     post:
       consumes:
       - application/json
+      description: Adds profile for agent
+      parameters:
+      - description: Query parameters
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/dataapi.NewAgentProfileQuery'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Adds profile for agent
+      tags:
+      - example
+  /v1/data/getAgentProfile:
+    post:
+      consumes:
+      - application/json
+      description: Searches profile for agent
+      parameters:
+      - description: Query parameters
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/dataapi.GetAgentProfileQuery'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Searches profile for agent
+      tags:
+      - example
+  /v1/emotion/getCurrentEmotion:
+    post:
+      consumes:
+      - application/json
+      description: Fetching current emotion(the last time updated) through api key
+        and context key, returning new context key and initial emotion if context
+        invalid, returning emotion if context is valid
+      parameters:
+      - description: Query parameters
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/emotionapi.GetCurrentEmotionQuery'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Getting through api key and context key
+      tags:
+      - example
+  /v1/emotion/registerEmotion:
+    post:
+      consumes:
+      - application/json
       description: Registers new emotion while returning a context id in the result
       parameters:
       - description: Query parameters
@@ -66,28 +146,6 @@ paths:
           schema:
             $ref: '#/definitions/response.Response'
       summary: Registers new emotion while returning a context id in the result
-      tags:
-      - example
-  /v1/data/getAgentProfile:
-    post:
-      consumes:
-      - application/json
-      description: Searches profile for agent
-      parameters:
-      - description: Query parameters
-        in: body
-        name: req
-        required: true
-        schema:
-          $ref: '#/definitions/dataapi.SearchAgentProfileQuery'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: Searches profile for agent
       tags:
       - example
   /v1/utils/health:

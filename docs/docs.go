@@ -25,7 +25,7 @@ const docTemplate = `{
     "paths": {
         "/v1/data/addAgentProfile": {
             "post": {
-                "description": "Registers new emotion while returning a context id in the result",
+                "description": "Adds profile for agent",
                 "consumes": [
                     "application/json"
                 ],
@@ -35,7 +35,7 @@ const docTemplate = `{
                 "tags": [
                     "example"
                 ],
-                "summary": "Registers new emotion while returning a context id in the result",
+                "summary": "Adds profile for agent",
                 "parameters": [
                     {
                         "description": "Query parameters",
@@ -43,7 +43,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/emotionapi.NewContextQuery"
+                            "$ref": "#/definitions/dataapi.NewAgentProfileQuery"
                         }
                     }
                 ],
@@ -77,7 +77,75 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dataapi.SearchAgentProfileQuery"
+                            "$ref": "#/definitions/dataapi.GetAgentProfileQuery"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/emotion/getCurrentEmotion": {
+            "post": {
+                "description": "Fetching current emotion(the last time updated) through api key and context key, returning new context key and initial emotion if context invalid, returning emotion if context is valid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "example"
+                ],
+                "summary": "Getting through api key and context key",
+                "parameters": [
+                    {
+                        "description": "Query parameters",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/emotionapi.GetCurrentEmotionQuery"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/emotion/registerEmotion": {
+            "post": {
+                "description": "Registers new emotion while returning a context id in the result",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "example"
+                ],
+                "summary": "Registers new emotion while returning a context id in the result",
+                "parameters": [
+                    {
+                        "description": "Query parameters",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/emotionapi.NewContextQuery"
                         }
                     }
                 ],
@@ -116,33 +184,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dataapi.NewAgentProfileQuery": {
-            "type": "object",
-            "properties": {
-                "agreeableness": {
-                    "type": "number"
-                },
-                "conscientiousness": {
-                    "type": "number"
-                },
-                "context_life_time_in_days": {
-                    "type": "integer"
-                },
-                "extraversion": {
-                    "type": "number"
-                },
-                "is_context_infinite": {
-                    "type": "boolean"
-                },
-                "neuroticism": {
-                    "type": "number"
-                },
-                "openness": {
-                    "type": "number"
-                }
-            }
-        },
-        "dataapi.SearchAgentProfileQuery": {
+        "dataapi.GetAgentProfileQuery": {
             "type": "object",
             "properties": {
                 "apikey": {
@@ -150,10 +192,52 @@ const docTemplate = `{
                 }
             }
         },
+        "dataapi.NewAgentProfileQuery": {
+            "type": "object",
+            "properties": {
+                "agreeableness": {
+                    "type": "number",
+                    "format": "float64"
+                },
+                "conscientiousness": {
+                    "type": "number",
+                    "format": "float64"
+                },
+                "contextLifeTimeInDays": {
+                    "type": "integer"
+                },
+                "extraversion": {
+                    "type": "number",
+                    "format": "float64"
+                },
+                "isContextInfinite": {
+                    "type": "boolean"
+                },
+                "neuroticism": {
+                    "type": "number",
+                    "format": "float64"
+                },
+                "openness": {
+                    "type": "number",
+                    "format": "float64"
+                }
+            }
+        },
+        "emotionapi.GetCurrentEmotionQuery": {
+            "type": "object",
+            "properties": {
+                "apikey": {
+                    "type": "string"
+                },
+                "contextKey": {
+                    "type": "string"
+                }
+            }
+        },
         "emotionapi.NewContextQuery": {
             "type": "object",
             "properties": {
-                "api_key": {
+                "apikey": {
                     "type": "string"
                 }
             }

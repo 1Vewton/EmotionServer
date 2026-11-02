@@ -186,3 +186,71 @@ func (manager *ContextManager) GetDataFromContext(
 	}
 	return result, nil
 }
+
+// DeleteContext deletes context
+func (manager *ContextManager) DeleteContext(
+	ctx context.Context,
+	contextKey string,
+) error {
+	_, err := manager.client.Del(
+		ctx,
+		contextKey,
+	).Result()
+	return err
+}
+
+// DeleteContextFromProfile deletes the context from the context list of the profile
+func (manager *ContextManager) DeleteContextFromProfile(
+	ctx context.Context,
+	apiKey string,
+	contextKey string,
+) error {
+	_, err := manager.client.SRem(
+		ctx,
+		apiKey,
+		contextKey,
+	).Result()
+	return err
+}
+
+// CleanData cleans certain data
+func (manager *ContextManager) CleanData(
+	ctx context.Context,
+	apiKey string,
+	contextKey string,
+) error {
+	contextExists, err := manager.HasContext(
+		ctx,
+		contextKey,
+	)
+	if err != nil {
+		return err
+	}
+	contextExistsWithProfile, err := manager.ContextExistsWithAgentProfile(
+		ctx,
+		apiKey,
+		contextKey,
+	)
+	if err != nil {
+		return err
+	}
+	profileExists, err := manager.profileManager.Exists(
+		ctx,
+		apiKey,
+	)
+	if profileExists {
+		if (contextExists && contextExistsWithProfile) ||
+			(!contextExists && !contextExistsWithProfile) {
+			return nil
+		} else if contextExists && !contextExistsWithProfile {
+			err := manager.DeleteContext(
+				ctx,
+				contextKey,
+			)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}

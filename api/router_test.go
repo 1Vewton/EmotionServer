@@ -312,6 +312,10 @@ func TestRouter(t *testing.T) {
 	)
 	err = database.Close(db)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
+	}
+	err = database.CloseRedis(redisclient)
+	if err != nil {
+		t.Fatal(err)
 	}
 }

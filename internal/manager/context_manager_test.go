@@ -111,6 +111,56 @@ func TestContextCRUD(t *testing.T) {
 			"the result data is inconsistent wih expected data",
 		)
 	}
+	err = newContextManager.DeleteContext(
+		ctx,
+		key,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = newContextManager.DeleteContextFromProfile(
+		ctx,
+		apiKey,
+		key,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	existsAfterDelete, err := newContextManager.HasContext(
+		ctx,
+		key,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if existsAfterDelete {
+		t.Fatalf(
+			"expected %s not to exists",
+			key,
+		)
+	}
+	err = newContextManager.DeleteContextFromProfile(
+		ctx,
+		apiKey,
+		key,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	contextExistsWithProfile, err := newContextManager.ContextExistsWithAgentProfile(
+		ctx,
+		apiKey,
+		key,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if contextExistsWithProfile {
+		t.Fatalf(
+			"expected context key of %s does not exists",
+			key,
+		)
+	}
 	err = database.CloseRedis(resultClient)
 	if err != nil {
 		t.Error(err)
@@ -221,5 +271,13 @@ func TestContextWithAgentProfile(t *testing.T) {
 			"this context %s just not exists",
 			contextKey,
 		)
+	}
+	err = database.CloseRedis(redisclient)
+	if err != nil {
+		t.Error(err)
+	}
+	err = database.Close(tDB)
+	if err != nil {
+		t.Error(err)
 	}
 }
