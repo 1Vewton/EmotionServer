@@ -214,7 +214,11 @@ func (manager *ContextManager) DeleteContextFromProfile(
 }
 
 // DeleteProfileData deletes a profile stored in redis and the data of its context
-func (manager *ContextManager) DeleteProfileData()
+func (manager *ContextManager) DeleteProfileData(
+	apiKey string,
+) error {
+	return nil
+}
 
 // CleanData cleans certain data
 func (manager *ContextManager) CleanData(
