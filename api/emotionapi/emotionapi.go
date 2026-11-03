@@ -130,6 +130,7 @@ func GetCurrentEmotion(
 			nil,
 			err,
 		)
+		return
 	}
 	// Checks agent existence
 	agentExists, err := manager.MainAgentProfileManager.Exists(
@@ -144,6 +145,7 @@ func GetCurrentEmotion(
 			nil,
 			err,
 		)
+		return
 	}
 	if !agentExists {
 		response.NewResponse(
@@ -156,6 +158,7 @@ func GetCurrentEmotion(
 				query.APIKey,
 			),
 		)
+		return
 	}
 	// Checks context existence
 	contextExistsInProfile, err := manager.MainContextManager.ContextExistsWithAgentProfile(
@@ -171,6 +174,7 @@ func GetCurrentEmotion(
 			nil,
 			err,
 		)
+		return
 	}
 	contextExistsInDatabase, err := manager.MainContextManager.HasContext(
 		c.Request.Context(),
@@ -184,6 +188,7 @@ func GetCurrentEmotion(
 			nil,
 			err,
 		)
+		return
 	}
 	contextExists := contextExistsInDatabase && contextExistsInProfile
 	agentProfile, err := manager.MainAgentProfileManager.SearchAgentProfile(
@@ -198,6 +203,7 @@ func GetCurrentEmotion(
 			nil,
 			err,
 		)
+		return
 	}
 	if !contextExists {
 		contextID := uuid.NewString()
@@ -215,6 +221,7 @@ func GetCurrentEmotion(
 				nil,
 				err,
 			)
+			return
 		}
 		resp := &GetCurrentEmotionResponse{
 			CurrentEmotion: agentProfile.InitialEmotion,
@@ -227,6 +234,7 @@ func GetCurrentEmotion(
 			resp,
 			nil,
 		)
+		return
 	}
 	contextData, err := manager.MainContextManager.GetDataFromContext(
 		c.Request.Context(),
@@ -240,6 +248,7 @@ func GetCurrentEmotion(
 			nil,
 			err,
 		)
+		return
 	}
 	resp := &GetCurrentEmotionResponse{
 		CurrentEmotion: contextData.CurrentEmotion,

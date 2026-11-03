@@ -213,6 +213,9 @@ func (manager *ContextManager) DeleteContextFromProfile(
 	return err
 }
 
+// DeleteProfileData deletes a profile stored in redis and the data of its context
+func (manager *ContextManager) DeleteProfileData()
+
 // CleanData cleans certain data
 func (manager *ContextManager) CleanData(
 	ctx context.Context,
@@ -242,14 +245,24 @@ func (manager *ContextManager) CleanData(
 		if (contextExists && contextExistsWithProfile) ||
 			(!contextExists && !contextExistsWithProfile) {
 			return nil
-		} else if contextExists && !contextExistsWithProfile {
-			err := manager.DeleteContext(
+		} else if !contextExists && contextExistsWithProfile {
+			err := manager.DeleteContextFromProfile(
 				ctx,
+				apiKey,
 				contextKey,
 			)
-			if err != nil {
-				return err
-			}
+			return err
+		}
+		return nil
+	}
+	if contextExistsWithProfile {
+		err := manager.DeleteContextFromProfile(
+			ctx,
+			apiKey,
+			contextKey,
+		)
+		if err != nil {
+			return err
 		}
 	}
 	return nil

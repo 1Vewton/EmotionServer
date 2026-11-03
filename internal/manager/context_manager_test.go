@@ -281,3 +281,111 @@ func TestContextWithAgentProfile(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+// TestDataCleaning tests the data cleaning
+func TestDataCleaning(t *testing.T) {
+	t.Parallel()
+	ctx := t.Context()
+	apiKey := uuid.NewString()
+	contextID := uuid.NewString()
+	tDB, err := database.Connect(
+		":memory:",
+		databasetype.Sqlite,
+		&profile.AgentProfile{},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	redisclient := database.NewRedisConfig(
+		"localhost:6379",
+		"",
+	).WithDialTimeout(
+		5,
+	).WithReadTimeout(
+		5,
+	).WithMaxRetries(
+		3,
+	).WithMaxRetryBackoff(
+		5,
+	).WithMinRetryBackoff(
+		3,
+	).ToClient()
+	profileManager := NewAgentProfileManager(
+		tDB,
+	)
+	testContextManager := NewContextManager(
+		redisclient,
+		profileManager,
+	)
+	newProfile, err := profile.NewAgentProfile(
+		apiKey,
+		ocean.NewPersonality(
+			0.0,
+			0.0,
+			0.0,
+			0.0,
+			0.0,
+		),
+		5*time.Hour,
+	)
+	err = profileManager.AddNewAgentProfile(
+		ctx,
+		newProfile,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	contextKey, err := testContextManager.NewContext(
+		ctx,
+		apiKey,
+		contextID,
+		nil,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = testContextManager.AddNewContextForProfile(
+		ctx,
+		apiKey,
+		contextKey,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = testContextManager.CleanData(
+		ctx,
+		apiKey,
+		contextKey,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	hasContext1, err := testContextManager.HasContext(
+		ctx,
+		contextKey,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !hasContext1 {
+		t.Fatalf(
+			"expected context key %s to exist",
+			contextKey,
+		)
+	}
+	hasContextInProfile1, err := testContextManager.ContextExistsWithAgentProfile(
+		ctx,
+		apiKey,
+		contextKey,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !hasContextInProfile1 {
+		t.Fatalf(
+			"expected context with %s exists for profile %s",
+			contextKey,
+			apiKey,
+		)
+	}
+}
