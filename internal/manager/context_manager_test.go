@@ -352,7 +352,7 @@ func TestDataCleaning(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = testContextManager.CleanData(
+	err = testContextManager.CleanSingleData(
 		ctx,
 		apiKey,
 		contextKey,
@@ -386,6 +386,37 @@ func TestDataCleaning(t *testing.T) {
 			"expected context with %s exists for profile %s",
 			contextKey,
 			apiKey,
+		)
+	}
+	newContextKey := uuid.NewString()
+	err = testContextManager.AddNewContextForProfile(
+		ctx,
+		apiKey,
+		newContextKey,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = testContextManager.CleanSingleData(
+		ctx,
+		apiKey,
+		newContextKey,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	hasContextInProfile2, err := testContextManager.ContextExistsWithAgentProfile(
+		ctx,
+		apiKey,
+		newContextKey,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if hasContextInProfile2 {
+		t.Fatalf(
+			"expected context with key %s to get deleted",
+			newContextKey,
 		)
 	}
 }
