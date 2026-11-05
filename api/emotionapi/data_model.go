@@ -25,3 +25,13 @@ type GetCurrentEmotionResponse struct {
 	CurrentEmotion *emotion.Emotion
 	NewContextKey  *string
 }
+
+// GetContextsOfAProfileQuery defines the parameter for getting contexxts for a profile
+type GetContextsOfAProfileQuery struct {
+	APIKey string
+}
+
+// GetContextsOfAProfileResponse defines the response for getting contexts of a profile
+type GetContextsOfAProfileResponse struct {
+	Contexts []string
+}

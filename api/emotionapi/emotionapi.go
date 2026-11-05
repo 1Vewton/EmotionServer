@@ -121,7 +121,7 @@ func GetCurrentEmotion(
 	c *gin.Context,
 ) {
 	var query GetCurrentEmotionQuery
-	err := c.ShouldBindJSON(query)
+	err := c.ShouldBindJSON(&query)
 	if err != nil {
 		response.NewResponse(
 			c,

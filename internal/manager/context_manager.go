@@ -341,7 +341,6 @@ func (manager *ContextManager) CleanSingleData(
 func (manager *ContextManager) CleanAllData(
 	ctx context.Context,
 	apiKey string,
-	contextKey string,
 ) error {
 	contexts, err := manager.GetContextsInProfile(
 		ctx,

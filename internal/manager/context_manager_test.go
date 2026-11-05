@@ -11,6 +11,43 @@ import (
 	"github.com/google/uuid"
 )
 
+// inList checks if certain string is in a string list
+func inList(
+	t *testing.T,
+	content string,
+	singleString string,
+	stringList []string,
+) {
+	for _, selectedString := range stringList {
+		if selectedString == singleString {
+			return
+		}
+	}
+	t.Fatalf(
+		"%s does not exists in the list of %s",
+		singleString,
+		content,
+	)
+}
+
+// notInList checks if certain string is not in a string list
+func notInList(
+	t *testing.T,
+	content string,
+	singleString string,
+	stringList []string,
+) {
+	for _, selectedString := range stringList {
+		if selectedString == singleString {
+			t.Fatalf(
+				"%s exists in the list of %s",
+				singleString,
+				content,
+			)
+		}
+	}
+}
+
 // TestContextCRUD tests the crud of the context
 func TestContextCRUD(t *testing.T) {
 	t.Parallel()
@@ -419,4 +456,107 @@ func TestDataCleaning(t *testing.T) {
 			newContextKey,
 		)
 	}
+	newAPIKey := uuid.NewString()
+	testProfile, err := profile.NewAgentProfile(
+		newAPIKey,
+		ocean.NewPersonality(
+			0.0,
+			0.0,
+			0.0,
+			0.0,
+			0.0,
+		),
+		5*time.Hour,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = profileManager.AddNewAgentProfile(
+		ctx,
+		testProfile,
+	)
+	id1 := uuid.NewString()
+	contextKey1, err := testContextManager.NewContext(
+		ctx,
+		newAPIKey,
+		id1,
+		nil,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = testContextManager.AddNewContextForProfile(
+		ctx,
+		newAPIKey,
+		contextKey1,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	id2 := uuid.NewString()
+	contextKey2, err := testContextManager.NewContext(
+		ctx,
+		newAPIKey,
+		id2,
+		nil,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = testContextManager.AddNewContextForProfile(
+		ctx,
+		newAPIKey,
+		contextKey2,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	contextKeyForDelete := uuid.NewString()
+	err = testContextManager.AddNewContextForProfile(
+		ctx,
+		newAPIKey,
+		contextKeyForDelete,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = testContextManager.CleanAllData(
+		ctx,
+		newAPIKey,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	contextsAfterCleaning, err := testContextManager.GetContextsInProfile(
+		ctx,
+		newAPIKey,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(contextsAfterCleaning) != 2 {
+		t.Fatalf(
+			"expected the length of contexts after fetching is %d, got %d",
+			2,
+			len(contextsAfterCleaning),
+		)
+	}
+	inList(
+		t,
+		"contexts",
+		contextKey1,
+		contextsAfterCleaning,
+	)
+	inList(
+		t,
+		"contexts",
+		contextKey2,
+		contextsAfterCleaning,
+	)
+	notInList(
+		t,
+		"contexts",
+		contextKeyForDelete,
+		contextsAfterCleaning,
+	)
 }
