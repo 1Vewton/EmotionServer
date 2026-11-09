@@ -71,9 +71,9 @@ func TestContextCRUD(t *testing.T) {
 		0.0,
 		0.0,
 	)
-	apiKey := "test114514"
+	agentKey := "test114514"
 	newProfile, err := profile.NewAgentProfile(
-		apiKey,
+		agentKey,
 		mutualPersonality,
 		5*time.Minute,
 	)
@@ -110,7 +110,7 @@ func TestContextCRUD(t *testing.T) {
 	ctxID := "ctx114514"
 	key, err := newContextManager.NewContext(
 		ctx,
-		apiKey,
+		agentKey,
 		ctxID,
 		nil,
 	)
@@ -157,7 +157,7 @@ func TestContextCRUD(t *testing.T) {
 	}
 	err = newContextManager.DeleteContextFromProfile(
 		ctx,
-		apiKey,
+		agentKey,
 		key,
 	)
 	if err != nil {
@@ -178,7 +178,7 @@ func TestContextCRUD(t *testing.T) {
 	}
 	err = newContextManager.DeleteContextFromProfile(
 		ctx,
-		apiKey,
+		agentKey,
 		key,
 	)
 	if err != nil {
@@ -186,7 +186,7 @@ func TestContextCRUD(t *testing.T) {
 	}
 	contextExistsWithProfile, err := newContextManager.ContextExistsWithAgentProfile(
 		ctx,
-		apiKey,
+		agentKey,
 		key,
 	)
 	if err != nil {
@@ -213,7 +213,7 @@ func TestContextWithAgentProfile(t *testing.T) {
 	t.Parallel()
 	ctx := t.Context()
 	// connect to the redis
-	apiKey := uuid.NewString()
+	agentKey := uuid.NewString()
 	contextID := uuid.NewString()
 	redisclient := database.NewRedisConfig(
 		"localhost:6379",
@@ -241,7 +241,7 @@ func TestContextWithAgentProfile(t *testing.T) {
 		tDB,
 	)
 	newAgentProfile, err := profile.NewAgentProfile(
-		apiKey,
+		agentKey,
 		ocean.NewPersonality(
 			0.0,
 			0.0,
@@ -267,7 +267,7 @@ func TestContextWithAgentProfile(t *testing.T) {
 	}
 	contextKey, err := newContextManager.NewContext(
 		ctx,
-		apiKey,
+		agentKey,
 		contextID,
 		nil,
 	)
@@ -276,7 +276,7 @@ func TestContextWithAgentProfile(t *testing.T) {
 	}
 	err = newContextManager.AddNewContextForProfile(
 		ctx,
-		apiKey,
+		agentKey,
 		contextKey,
 	)
 	if err != nil {
@@ -284,7 +284,7 @@ func TestContextWithAgentProfile(t *testing.T) {
 	}
 	exists, err := newContextManager.ContextExistsWithAgentProfile(
 		ctx,
-		apiKey,
+		agentKey,
 		contextKey,
 	)
 	if err != nil {
@@ -323,7 +323,7 @@ func TestContextWithAgentProfile(t *testing.T) {
 func TestDataCleaning(t *testing.T) {
 	t.Parallel()
 	ctx := t.Context()
-	apiKey := uuid.NewString()
+	agentKey := uuid.NewString()
 	contextID := uuid.NewString()
 	tDB, err := database.Connect(
 		":memory:",
@@ -355,7 +355,7 @@ func TestDataCleaning(t *testing.T) {
 		profileManager,
 	)
 	newProfile, err := profile.NewAgentProfile(
-		apiKey,
+		agentKey,
 		ocean.NewPersonality(
 			0.0,
 			0.0,
@@ -374,7 +374,7 @@ func TestDataCleaning(t *testing.T) {
 	}
 	contextKey, err := testContextManager.NewContext(
 		ctx,
-		apiKey,
+		agentKey,
 		contextID,
 		nil,
 	)
@@ -383,7 +383,7 @@ func TestDataCleaning(t *testing.T) {
 	}
 	err = testContextManager.AddNewContextForProfile(
 		ctx,
-		apiKey,
+		agentKey,
 		contextKey,
 	)
 	if err != nil {
@@ -391,7 +391,7 @@ func TestDataCleaning(t *testing.T) {
 	}
 	err = testContextManager.CleanSingleData(
 		ctx,
-		apiKey,
+		agentKey,
 		contextKey,
 	)
 	if err != nil {
@@ -412,7 +412,7 @@ func TestDataCleaning(t *testing.T) {
 	}
 	hasContextInProfile1, err := testContextManager.ContextExistsWithAgentProfile(
 		ctx,
-		apiKey,
+		agentKey,
 		contextKey,
 	)
 	if err != nil {
@@ -422,13 +422,13 @@ func TestDataCleaning(t *testing.T) {
 		t.Fatalf(
 			"expected context with %s exists for profile %s",
 			contextKey,
-			apiKey,
+			agentKey,
 		)
 	}
 	newContextKey := uuid.NewString()
 	err = testContextManager.AddNewContextForProfile(
 		ctx,
-		apiKey,
+		agentKey,
 		newContextKey,
 	)
 	if err != nil {
@@ -436,7 +436,7 @@ func TestDataCleaning(t *testing.T) {
 	}
 	err = testContextManager.CleanSingleData(
 		ctx,
-		apiKey,
+		agentKey,
 		newContextKey,
 	)
 	if err != nil {
@@ -444,7 +444,7 @@ func TestDataCleaning(t *testing.T) {
 	}
 	hasContextInProfile2, err := testContextManager.ContextExistsWithAgentProfile(
 		ctx,
-		apiKey,
+		agentKey,
 		newContextKey,
 	)
 	if err != nil {
@@ -456,9 +456,9 @@ func TestDataCleaning(t *testing.T) {
 			newContextKey,
 		)
 	}
-	newAPIKey := uuid.NewString()
+	newAgentKey := uuid.NewString()
 	testProfile, err := profile.NewAgentProfile(
-		newAPIKey,
+		newAgentKey,
 		ocean.NewPersonality(
 			0.0,
 			0.0,
@@ -478,7 +478,7 @@ func TestDataCleaning(t *testing.T) {
 	id1 := uuid.NewString()
 	contextKey1, err := testContextManager.NewContext(
 		ctx,
-		newAPIKey,
+		newAgentKey,
 		id1,
 		nil,
 	)
@@ -487,7 +487,7 @@ func TestDataCleaning(t *testing.T) {
 	}
 	err = testContextManager.AddNewContextForProfile(
 		ctx,
-		newAPIKey,
+		newAgentKey,
 		contextKey1,
 	)
 	if err != nil {
@@ -496,7 +496,7 @@ func TestDataCleaning(t *testing.T) {
 	id2 := uuid.NewString()
 	contextKey2, err := testContextManager.NewContext(
 		ctx,
-		newAPIKey,
+		newAgentKey,
 		id2,
 		nil,
 	)
@@ -505,7 +505,7 @@ func TestDataCleaning(t *testing.T) {
 	}
 	err = testContextManager.AddNewContextForProfile(
 		ctx,
-		newAPIKey,
+		newAgentKey,
 		contextKey2,
 	)
 	if err != nil {
@@ -514,7 +514,7 @@ func TestDataCleaning(t *testing.T) {
 	contextKeyForDelete := uuid.NewString()
 	err = testContextManager.AddNewContextForProfile(
 		ctx,
-		newAPIKey,
+		newAgentKey,
 		contextKeyForDelete,
 	)
 	if err != nil {
@@ -522,14 +522,14 @@ func TestDataCleaning(t *testing.T) {
 	}
 	err = testContextManager.CleanAllData(
 		ctx,
-		newAPIKey,
+		newAgentKey,
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
 	contextsAfterCleaning, err := testContextManager.GetContextsInProfile(
 		ctx,
-		newAPIKey,
+		newAgentKey,
 	)
 	if err != nil {
 		t.Fatal(err)

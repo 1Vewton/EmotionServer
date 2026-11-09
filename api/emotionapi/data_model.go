@@ -6,7 +6,7 @@ import (
 
 // NewContextQuery defines parameter for query that creates new context
 type NewContextQuery struct {
-	APIKey string
+	AgentKey string
 }
 
 // WithContextResponse returns response with context key
@@ -16,7 +16,7 @@ type WithContextResponse struct {
 
 // GetCurrentEmotionQuery defines parameter for getting current emotion
 type GetCurrentEmotionQuery struct {
-	APIKey     string
+	AgentKey   string
 	ContextKey string
 }
 
@@ -28,7 +28,7 @@ type GetCurrentEmotionResponse struct {
 
 // GetContextsOfAProfileQuery defines the parameter for getting contexxts for a profile
 type GetContextsOfAProfileQuery struct {
-	APIKey string
+	AgentKey string
 }
 
 // GetContextsOfAProfileResponse defines the response for getting contexts of a profile

@@ -20,12 +20,12 @@ type NewAgentProfileQuery struct {
 
 // NewAgentProfileResponse defines the response for creating new agent profile response
 type NewAgentProfileResponse struct {
-	APIKey string
+	AgentKey string
 }
 
 // GetAgentProfileQuery defines the query for searching the agent profile
 type GetAgentProfileQuery struct {
-	APIKey string
+	AgentKey string
 }
 
 // ReturnedAgentProfile defines the returned agent profile

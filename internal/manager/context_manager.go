@@ -13,8 +13,9 @@ import (
 
 // ContextManager defines the manager for context
 type ContextManager struct {
-	client         *redis.Client
-	profileManager *AgentProfileManager
+	client                  *redis.Client
+	profileManager          *AgentProfileManager
+	profileToContextManager *ProfileToContextManager
 }
 
 // NewContextManager creates new context manager
@@ -22,9 +23,14 @@ func NewContextManager(
 	client *redis.Client,
 	profileManager *AgentProfileManager,
 ) *ContextManager {
+	profileToContextManager := NewProfileToContextManager(
+		client,
+		profileManager,
+	)
 	return &ContextManager{
-		client:         client,
-		profileManager: profileManager,
+		client:                  client,
+		profileManager:          profileManager,
+		profileToContextManager: profileToContextManager,
 	}
 }
 
@@ -32,12 +38,12 @@ func NewContextManager(
 // system: agentprofile -> context
 func (manager *ContextManager) ContextExistsWithAgentProfile(
 	ctx context.Context,
-	apiKey string,
+	agentKey string,
 	contextKey string,
 ) (bool, error) {
 	keyExists, err := manager.client.Exists(
 		ctx,
-		apiKey,
+		agentKey,
 	).Result()
 	if err != nil {
 		return false, err
@@ -47,7 +53,7 @@ func (manager *ContextManager) ContextExistsWithAgentProfile(
 	}
 	existsInProfileList, err := manager.client.SIsMember(
 		ctx,
-		apiKey,
+		agentKey,
 		contextKey,
 	).Result()
 	if err != nil {
@@ -60,12 +66,12 @@ func (manager *ContextManager) ContextExistsWithAgentProfile(
 // system: agentprofile -> context
 func (manager *ContextManager) AddNewContextForProfile(
 	ctx context.Context,
-	apiKey string,
+	agentKey string,
 	contextKey string,
 ) error {
 	exists, err := manager.ContextExistsWithAgentProfile(
 		ctx,
-		apiKey,
+		agentKey,
 		contextKey,
 	)
 	if err != nil {
@@ -76,7 +82,7 @@ func (manager *ContextManager) AddNewContextForProfile(
 	}
 	_, err = manager.client.SAdd(
 		ctx,
-		apiKey,
+		agentKey,
 		contextKey,
 	).Result()
 	return err
@@ -86,13 +92,13 @@ func (manager *ContextManager) AddNewContextForProfile(
 // Return the context key
 func (manager *ContextManager) NewContext(
 	ctx context.Context,
-	apiKey string,
+	agentKey string,
 	contextID string,
 	orderedContextExistsTime *time.Duration,
 ) (string, error) {
 	agentProfile, err := manager.profileManager.SearchAgentProfile(
 		ctx,
-		apiKey,
+		agentKey,
 	)
 	if err != nil {
 		return "", err
@@ -120,7 +126,7 @@ func (manager *ContextManager) NewContext(
 	}
 	// Adds new context
 	key := GetEmotionToken(
-		apiKey,
+		agentKey,
 		contextID,
 	)
 	exists, err := manager.client.Exists(
@@ -139,7 +145,7 @@ func (manager *ContextManager) NewContext(
 		).Result()
 		manager.AddNewContextForProfile(
 			ctx,
-			apiKey,
+			agentKey,
 			key,
 		)
 		return key, err
@@ -213,12 +219,12 @@ func (manager *ContextManager) DeleteContext(
 // DeleteContextFromProfile deletes the context from the context list of the profile
 func (manager *ContextManager) DeleteContextFromProfile(
 	ctx context.Context,
-	apiKey string,
+	agentKey string,
 	contextKey string,
 ) error {
 	hasProfile, err := manager.HasProfile(
 		ctx,
-		apiKey,
+		agentKey,
 	)
 	if err != nil {
 		return err
@@ -228,7 +234,7 @@ func (manager *ContextManager) DeleteContextFromProfile(
 	}
 	_, err = manager.client.SRem(
 		ctx,
-		apiKey,
+		agentKey,
 		contextKey,
 	).Result()
 	return err
@@ -237,11 +243,11 @@ func (manager *ContextManager) DeleteContextFromProfile(
 // HasProfile checks if certain profile exists in the redis database
 func (manager *ContextManager) HasProfile(
 	ctx context.Context,
-	apiKey string,
+	agentKey string,
 ) (bool, error) {
 	exists, err := manager.client.Exists(
 		ctx,
-		apiKey,
+		agentKey,
 	).Result()
 	if err != nil {
 		return false, err
@@ -255,11 +261,11 @@ func (manager *ContextManager) HasProfile(
 // GetContextsInProfile gets all the context keys in a collection of agent profile
 func (manager *ContextManager) GetContextsInProfile(
 	ctx context.Context,
-	apiKey string,
+	agentKey string,
 ) ([]string, error) {
 	hasProfile, err := manager.HasProfile(
 		ctx,
-		apiKey,
+		agentKey,
 	)
 	if err != nil {
 		return nil, err
@@ -267,12 +273,12 @@ func (manager *ContextManager) GetContextsInProfile(
 	if !hasProfile {
 		return nil, fmt.Errorf(
 			"profile with api-key %s does not exists",
-			apiKey,
+			agentKey,
 		)
 	}
 	contexts, err := manager.client.SMembers(
 		ctx,
-		apiKey,
+		agentKey,
 	).Result()
 	return contexts, err
 }
@@ -280,11 +286,11 @@ func (manager *ContextManager) GetContextsInProfile(
 // DeleteProfileData deletes a profile stored in redis and the data of its context
 func (manager *ContextManager) DeleteProfileData(
 	ctx context.Context,
-	apiKey string,
+	agentKey string,
 ) error {
 	contexts, err := manager.GetContextsInProfile(
 		ctx,
-		apiKey,
+		agentKey,
 	)
 	if err != nil {
 		return err
@@ -297,7 +303,7 @@ func (manager *ContextManager) DeleteProfileData(
 	}
 	_, err = manager.client.Del(
 		ctx,
-		apiKey,
+		agentKey,
 	).Result()
 	if err != nil {
 		return err
@@ -308,7 +314,7 @@ func (manager *ContextManager) DeleteProfileData(
 // CleanSingleData cleans single data
 func (manager *ContextManager) CleanSingleData(
 	ctx context.Context,
-	apiKey string,
+	agentKey string,
 	contextKey string,
 ) error {
 	contextExists, err := manager.HasContext(
@@ -320,7 +326,7 @@ func (manager *ContextManager) CleanSingleData(
 	}
 	contextExistsWithProfile, err := manager.ContextExistsWithAgentProfile(
 		ctx,
-		apiKey,
+		agentKey,
 		contextKey,
 	)
 	if err != nil {
@@ -329,7 +335,7 @@ func (manager *ContextManager) CleanSingleData(
 	if contextExistsWithProfile && !contextExists {
 		err = manager.DeleteContextFromProfile(
 			ctx,
-			apiKey,
+			agentKey,
 			contextKey,
 		)
 		return err
@@ -340,11 +346,11 @@ func (manager *ContextManager) CleanSingleData(
 // CleanAllData cleans all contexts for a profile
 func (manager *ContextManager) CleanAllData(
 	ctx context.Context,
-	apiKey string,
+	agentKey string,
 ) error {
 	contexts, err := manager.GetContextsInProfile(
 		ctx,
-		apiKey,
+		agentKey,
 	)
 	if err != nil {
 		return err
@@ -352,7 +358,7 @@ func (manager *ContextManager) CleanAllData(
 	for _, singleContextKey := range contexts {
 		err := manager.CleanSingleData(
 			ctx,
-			apiKey,
+			agentKey,
 			singleContextKey,
 		)
 		if err != nil {

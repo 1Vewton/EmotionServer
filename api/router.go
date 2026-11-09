@@ -35,5 +35,9 @@ func SetUpRouter() *gin.Engine {
 		"/registerEmotion",
 		emotionapi.RegisterEmotion,
 	)
+	emotionRouter.POST(
+		"/getContextsOfAProfile",
+		emotionapi.GetContextsOfAProfile,
+	)
 	return router
 }

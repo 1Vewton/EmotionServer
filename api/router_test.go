@@ -3,6 +3,8 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,8 +16,61 @@ import (
 	"github.com/1Vewton/EmotionServer/internal/profile"
 	"github.com/1Vewton/EmotionServer/pkg/database"
 	"github.com/1Vewton/EmotionServer/pkg/databasetype"
+	"github.com/gin-gonic/gin"
 	"github.com/mitchellh/mapstructure"
 )
+
+// testRequests tests the request
+func testRequests(
+	engine *gin.Engine,
+	method string,
+	url string,
+	data any,
+) (*response.Response, error) {
+	w := httptest.NewRecorder()
+	var reqBuffer io.Reader = nil
+	if data == nil {
+		reqBuffer = nil
+	} else {
+		bytesData, err := json.Marshal(
+			data,
+		)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"%s, original : %s",
+				err.Error(),
+				string(bytesData),
+			)
+		}
+		reqBuffer = bytes.NewBuffer(bytesData)
+	}
+	req, err := http.NewRequest(
+		method,
+		url,
+		reqBuffer,
+	)
+	if err != nil {
+		return nil, err
+	}
+	engine.ServeHTTP(
+		w,
+		req,
+	)
+	resultBytes := w.Body.Bytes()
+	var result *response.Response
+	err = json.Unmarshal(
+		resultBytes,
+		&result,
+	)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s, original : %s",
+			err.Error(),
+			string(resultBytes),
+		)
+	}
+	return result, nil
+}
 
 // TestRouter tests functions related to router
 func TestRouter(t *testing.T) {
@@ -63,21 +118,11 @@ func TestRouter(t *testing.T) {
 	t.Run(
 		"TestCheckHealth",
 		func(t *testing.T) {
-			w := httptest.NewRecorder()
-			req, err := http.NewRequest(
+			resp, err := testRequests(
+				router,
 				"GET",
 				"/v1/utils/health",
 				nil,
-			)
-			if err != nil {
-				t.Error(err)
-			}
-			router.ServeHTTP(w, req)
-			result := w.Body.Bytes()
-			var resp response.Response
-			err = json.Unmarshal(
-				result,
-				&resp,
 			)
 			if err != nil {
 				t.Error(err)
@@ -100,32 +145,14 @@ func TestRouter(t *testing.T) {
 			t.Run(
 				"DataCreationTest",
 				func(t *testing.T) {
-					w := httptest.NewRecorder()
-					encodedData, err := json.Marshal(newAgentData)
-					if err != nil {
-						t.Error(err)
-					}
-					req, err := http.NewRequest(
+					resp, err := testRequests(
+						router,
 						"POST",
 						"/v1/data/addAgentProfile",
-						bytes.NewBuffer(encodedData),
+						newAgentData,
 					)
 					if err != nil {
-						t.Error(err)
-					}
-					router.ServeHTTP(w, req)
-					result := w.Body.Bytes()
-					var resp response.Response
-					err = json.Unmarshal(
-						result,
-						&resp,
-					)
-					if err != nil {
-						t.Errorf(
-							"data: %s",
-							string(result),
-						)
-						t.Error(err)
+						t.Fatal(err)
 					}
 					if !resp.Success {
 						if resp.Error == nil {
@@ -142,15 +169,15 @@ func TestRouter(t *testing.T) {
 					respWithKey, ok := resp.Data.(map[string]any)
 					if !ok {
 						t.Errorf(
-							"the resp data (%T) with key cannot be decoded , raw data: %s",
+							"the resp data (%T) with key cannot be decoded , raw data: %v",
 							resp.Data,
-							string(result),
+							resp,
 						)
 					}
-					rawKey, exists := respWithKey["APIKey"]
+					rawKey, exists := respWithKey["AgentKey"]
 					if !exists {
 						t.Error(
-							"cannot find the api key returned",
+							"cannot find the agent key returned",
 						)
 					}
 					key, ok = rawKey.(string)
@@ -166,35 +193,19 @@ func TestRouter(t *testing.T) {
 			t.Run(
 				"GetAgentProfileTest",
 				func(t *testing.T) {
-					w := httptest.NewRecorder()
 					newQueryData := dataapi.GetAgentProfileQuery{
-						APIKey: key,
+						AgentKey: key,
 					}
-					encodedData, err := json.Marshal(
+					resp, err := testRequests(
+						router,
+						"POST",
+						"/v1/data/getAgentProfile",
 						newQueryData,
 					)
 					if err != nil {
-						t.Error(err)
-					}
-					req, err := http.NewRequest(
-						"POST",
-						"/v1/data/getAgentProfile",
-						bytes.NewBuffer(encodedData),
-					)
-					router.ServeHTTP(
-						w,
-						req,
-					)
-					result := w.Body.Bytes()
-					var resp response.Response
-					err = json.Unmarshal(
-						result,
-						&resp,
-					)
-					if err != nil {
 						t.Errorf(
-							"data: %s",
-							string(result),
+							"data: %v",
+							resp,
 						)
 						t.Error(err)
 					}
@@ -224,29 +235,12 @@ func TestRouter(t *testing.T) {
 	t.Run(
 		"TestEmotionCRUD",
 		func(t *testing.T) {
-			// Create the agent profile and creates the context
-			w := httptest.NewRecorder()
-			encodedData1, err := json.Marshal(
-				newAgentData,
-			)
-			if err != nil {
-				t.Fatal(err)
-			}
-			req, err := http.NewRequest(
+			resp, err := testRequests(
+				router,
 				"POST",
 				"/v1/data/addAgentProfile",
-				bytes.NewBuffer(encodedData1),
+				newAgentData,
 			)
-			if err != nil {
-				t.Fatal(err)
-			}
-			router.ServeHTTP(
-				w,
-				req,
-			)
-			result := w.Body.Bytes()
-			var resp response.Response
-			err = json.Unmarshal(result, &resp)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -263,49 +257,159 @@ func TestRouter(t *testing.T) {
 					resp.Data,
 				)
 			}
-			apiKey, ok := processedData["APIKey"].(string)
+			agentKey, ok := processedData["AgentKey"].(string)
 			if !ok {
 				t.Fatalf(
-					"fetched data %v of api key cannot be converted to string",
-					processedData["APIKey"],
+					"fetched data %v of agent key cannot be converted to string",
+					processedData["AgentKey"],
 				)
 			}
 			parameter := &emotionapi.NewContextQuery{
-				APIKey: apiKey,
+				AgentKey: agentKey,
 			}
-			decodedDataParameter, err := json.Marshal(parameter)
-			if err != nil {
-				t.Fatal(err)
-			}
-			w2 := httptest.NewRecorder()
-			req, err = http.NewRequest(
+			respCtx, err := testRequests(
+				router,
 				"POST",
 				"/v1/emotion/registerEmotion",
-				bytes.NewBuffer(decodedDataParameter),
+				parameter,
 			)
 			if err != nil {
-				t.Fatal(err)
-			}
-			router.ServeHTTP(
-				w2,
-				req,
-			)
-			ctxResult := w2.Body.Bytes()
-			var respCtx response.Response
-			err = json.Unmarshal(
-				ctxResult,
-				&respCtx,
-			)
-			if err != nil {
-				t.Error(
-					string(ctxResult),
+				t.Errorf(
+					"%v",
+					respCtx,
 				)
 				t.Fatal(err)
 			}
 			if !respCtx.Success {
 				t.Fatalf(
-					"the context generation is insuccess due to %s",
+					"the context generation failed due to %s",
 					*respCtx.Error,
+				)
+			}
+		},
+	)
+	t.Run(
+		"TestGetEmotions",
+		func(t *testing.T) {
+			resp, err := testRequests(
+				router,
+				"POST",
+				"/v1/data/addAgentProfile",
+				newAgentData,
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !resp.Success {
+				if resp.Error == nil {
+					t.Fatal(
+						"unexpected error",
+					)
+				}
+				t.Fatalf(
+					"the agent creating failed due to %s",
+					*resp.Error,
+				)
+			}
+			newMap, canConvert := resp.Data.(map[string]any)
+			if !canConvert {
+				t.Fatal(
+					"the data cannot be converted to map",
+				)
+			}
+			data, exists := newMap["AgentKey"]
+			if !exists {
+				t.Fatal(
+					"the AgentKey key does not exists",
+				)
+			}
+			agentKey, isString := data.(string)
+			if !isString {
+				t.Fatal(
+					"the AgentKey cannot simply converted to string",
+				)
+			}
+			// Add multiple contexts
+			addContextParameter := &emotionapi.NewContextQuery{
+				AgentKey: agentKey,
+			}
+			resp, err = testRequests(
+				router,
+				"POST",
+				"/v1/emotion/registerEmotion",
+				addContextParameter,
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !resp.Success {
+				if resp.Error == nil {
+					t.Fatal(
+						"unexpected error",
+					)
+				}
+				t.Fatal(
+					*resp.Error,
+				)
+			}
+			resp, err = testRequests(
+				router,
+				"POST",
+				"/v1/emotion/registerEmotion",
+				addContextParameter,
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !resp.Success {
+				if resp.Error == nil {
+					t.Fatal(
+						"unexpected error",
+					)
+				}
+				t.Fatal(
+					*resp.Error,
+				)
+			}
+			// Get contexts
+			getContextsParameter := emotionapi.GetContextsOfAProfileQuery{
+				AgentKey: agentKey,
+			}
+			resp, err = testRequests(
+				router,
+				"POST",
+				"/v1/emotion/getContextsOfAProfile",
+				getContextsParameter,
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !resp.Success {
+				if resp.Error != nil {
+					t.Fatal(*resp.Error)
+				}
+				t.Fatal(
+					"unexpected error",
+				)
+			}
+			mapData, isMap := resp.Data.(map[string]any)
+			if !isMap {
+				t.Fatal(
+					"the fetched data is not a map",
+				)
+			}
+			contextsRaw, exists := mapData["Contexts"]
+			if !exists {
+				t.Fatal(
+					"the returned data do not contain context field",
+				)
+			}
+			_, isStringSlice := contextsRaw.([]any)
+			if !isStringSlice {
+				t.Fatalf(
+					"the contexts is not a string slice: %v, all data: %v",
+					contextsRaw,
+					resp,
 				)
 			}
 		},

@@ -13,7 +13,7 @@ import (
 type AgentProfile struct {
 	gorm.Model
 	ID                string
-	APIKey            string             `gorm:"unique"`
+	AgentKey          string             `gorm:"unique"`
 	InitialEmotion    *emotion.Emotion   `gorm:"embedded"`
 	Personality       *ocean.Personality `gorm:"embedded"`
 	IsContextInfinite bool
@@ -27,7 +27,7 @@ func (profile *AgentProfile) Equals(
 	return profile.InitialEmotion.Equals(another.InitialEmotion) &&
 		profile.Personality.Equals(another.Personality) &&
 		profile.ID == another.ID &&
-		profile.APIKey == another.APIKey
+		profile.AgentKey == another.AgentKey
 }
 
 // ToStoredProfile converts AgentProfile to StoredProfile
@@ -53,7 +53,7 @@ func (profile *AgentProfile) SetIsContextInfinite(
 
 // NewAgentProfile creates new agent profile
 func NewAgentProfile(
-	apiKey string,
+	agentKey string,
 	personality *ocean.Personality,
 	defaultTime time.Duration,
 ) (*AgentProfile, error) {
@@ -64,19 +64,10 @@ func NewAgentProfile(
 	}
 	return &AgentProfile{
 		ID:                id,
-		APIKey:            apiKey,
+		AgentKey:          agentKey,
 		InitialEmotion:    initialEmotion,
 		Personality:       personality,
 		IsContextInfinite: false,
 		ContextExistsTime: &defaultTime,
 	}, nil
-}
-
-// GetSearchProfileByAPIKeySentence gets the sentence for searching agent profile
-func GetSearchProfileByAPIKeySentence(
-	apiKey string,
-) *AgentProfile {
-	return &AgentProfile{
-		APIKey: apiKey,
-	}
 }

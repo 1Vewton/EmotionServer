@@ -1,7 +1,7 @@
 package dataapi
 
 import (
-	"fmt"
+	"errors"
 	"time"
 
 	"github.com/1Vewton/EmotionServer/api/response"
@@ -51,12 +51,12 @@ func AddAgentProfile(
 	} else {
 		defaultTime = time.Duration(*query.ContextLifeTimeInDays*24) * time.Hour
 	}
-	apiKey := uuid.NewString()
+	agentKey := uuid.NewString()
 	result := &NewAgentProfileResponse{
-		APIKey: apiKey,
+		AgentKey: agentKey,
 	}
 	newAgentProfile, err := profile.NewAgentProfile(
-		apiKey,
+		agentKey,
 		personality,
 		defaultTime,
 	)
@@ -86,7 +86,7 @@ func AddAgentProfile(
 	)
 }
 
-// GetAgentProfile searches certain agent profile through api key
+// GetAgentProfile searches certain agent profile through agent key
 // @Summary Searches profile for agent
 // @Schemes
 // @Description Searches profile for agent
@@ -113,7 +113,7 @@ func GetAgentProfile(
 	}
 	exists, err := manager.MainAgentProfileManager.Exists(
 		c.Request.Context(),
-		query.APIKey,
+		query.AgentKey,
 	)
 	if err != nil {
 		response.NewResponse(
@@ -131,15 +131,15 @@ func GetAgentProfile(
 			404,
 			false,
 			nil,
-			fmt.Errorf(
-				"%s api key does not exists",
-				query.APIKey,
+			errors.New(
+				"such profile does not exist",
 			),
 		)
+		return
 	}
 	searchResult, err := manager.MainAgentProfileManager.SearchAgentProfile(
 		c.Request.Context(),
-		query.APIKey,
+		query.AgentKey,
 	)
 	returnedResult := &ReturnedAgentProfile{
 		ID:                searchResult.ID,

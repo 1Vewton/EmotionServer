@@ -1,7 +1,7 @@
 package emotionapi
 
 import (
-	"fmt"
+	"errors"
 	"time"
 
 	"github.com/1Vewton/EmotionServer/api/response"
@@ -41,7 +41,7 @@ func RegisterEmotion(
 	time := 24 * time.Hour
 	exists, err := manager.MainAgentProfileManager.Exists(
 		c.Request.Context(),
-		query.APIKey,
+		query.AgentKey,
 	)
 	if err != nil {
 		response.NewResponse(
@@ -51,6 +51,7 @@ func RegisterEmotion(
 			nil,
 			err,
 		)
+		return
 	}
 	if !exists {
 		response.NewResponse(
@@ -58,15 +59,15 @@ func RegisterEmotion(
 			404,
 			false,
 			nil,
-			fmt.Errorf(
-				"%s api key does not exists",
-				query.APIKey,
+			errors.New(
+				"such profile does not exist",
 			),
 		)
+		return
 	}
 	contextKey, err := manager.MainContextManager.NewContext(
 		c.Request.Context(),
-		query.APIKey,
+		query.AgentKey,
 		contextID,
 		&time,
 	)
@@ -82,7 +83,7 @@ func RegisterEmotion(
 	}
 	err = manager.MainContextManager.AddNewContextForProfile(
 		c.Request.Context(),
-		query.APIKey,
+		query.AgentKey,
 		contextKey,
 	)
 	if err != nil {
@@ -135,7 +136,7 @@ func GetCurrentEmotion(
 	// Checks agent existence
 	agentExists, err := manager.MainAgentProfileManager.Exists(
 		c.Request.Context(),
-		query.APIKey,
+		query.AgentKey,
 	)
 	if err != nil {
 		response.NewResponse(
@@ -153,9 +154,8 @@ func GetCurrentEmotion(
 			404,
 			false,
 			nil,
-			fmt.Errorf(
-				"agent with api key %s does not exists",
-				query.APIKey,
+			errors.New(
+				"such profile does not exist",
 			),
 		)
 		return
@@ -163,7 +163,7 @@ func GetCurrentEmotion(
 	// Checks context existence
 	contextExistsInProfile, err := manager.MainContextManager.ContextExistsWithAgentProfile(
 		c.Request.Context(),
-		query.APIKey,
+		query.AgentKey,
 		query.ContextKey,
 	)
 	if err != nil {
@@ -193,7 +193,7 @@ func GetCurrentEmotion(
 	contextExists := contextExistsInDatabase && contextExistsInProfile
 	agentProfile, err := manager.MainAgentProfileManager.SearchAgentProfile(
 		c.Request.Context(),
-		query.APIKey,
+		query.AgentKey,
 	)
 	if err != nil {
 		response.NewResponse(
@@ -209,7 +209,7 @@ func GetCurrentEmotion(
 		contextID := uuid.NewString()
 		contextKey, err := manager.MainContextManager.NewContext(
 			c.Request.Context(),
-			query.APIKey,
+			query.AgentKey,
 			contextID,
 			agentProfile.ContextExistsTime,
 		)

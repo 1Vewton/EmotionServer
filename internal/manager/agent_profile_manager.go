@@ -36,7 +36,7 @@ func (manager *AgentProfileManager) AddNewAgentProfile(
 	// Checks if this agent already exists
 	exists, err := manager.Exists(
 		ctx,
-		newAgentProfile.APIKey,
+		newAgentProfile.AgentKey,
 	)
 	if err != nil {
 		return err
@@ -44,7 +44,7 @@ func (manager *AgentProfileManager) AddNewAgentProfile(
 	if exists {
 		return fmt.Errorf(
 			"agent with api %s already exists",
-			newAgentProfile.APIKey,
+			newAgentProfile.AgentKey,
 		)
 	}
 	// Create
@@ -58,11 +58,11 @@ func (manager *AgentProfileManager) AddNewAgentProfile(
 // Exists checks if certain profile exists
 func (manager *AgentProfileManager) Exists(
 	ctx context.Context,
-	apiKey string,
+	agentKey string,
 ) (bool, error) {
 	result, err := gorm.G[profile.AgentProfile](manager.db).Where(
 		&profile.AgentProfile{
-			APIKey: apiKey,
+			AgentKey: agentKey,
 		},
 	).Find(ctx)
 	if err != nil {
@@ -77,11 +77,11 @@ func (manager *AgentProfileManager) Exists(
 // SearchAgentProfile searches profile for agent
 func (manager *AgentProfileManager) SearchAgentProfile(
 	ctx context.Context,
-	apiKey string,
+	agentKey string,
 ) (*profile.AgentProfile, error) {
 	fetchedProfile, err := gorm.G[*profile.AgentProfile](manager.db).Where(
 		&profile.AgentProfile{
-			APIKey: apiKey,
+			AgentKey: agentKey,
 		},
 	).First(ctx)
 	return fetchedProfile, err
