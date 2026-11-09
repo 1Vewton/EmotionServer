@@ -81,21 +81,6 @@ func RegisterEmotion(
 		)
 		return
 	}
-	err = manager.MainContextManager.AddNewContextForProfile(
-		c.Request.Context(),
-		query.AgentKey,
-		contextKey,
-	)
-	if err != nil {
-		response.NewResponse(
-			c,
-			500,
-			false,
-			nil,
-			err,
-		)
-		return
-	}
 	resp := &WithContextResponse{
 		ContextKey: contextKey,
 	}
@@ -161,7 +146,7 @@ func GetCurrentEmotion(
 		return
 	}
 	// Checks context existence
-	contextExistsInProfile, err := manager.MainContextManager.ContextExistsWithAgentProfile(
+	contextExists, err := manager.MainContextManager.HasContext(
 		c.Request.Context(),
 		query.AgentKey,
 		query.ContextKey,
@@ -176,21 +161,6 @@ func GetCurrentEmotion(
 		)
 		return
 	}
-	contextExistsInDatabase, err := manager.MainContextManager.HasContext(
-		c.Request.Context(),
-		query.ContextKey,
-	)
-	if err != nil {
-		response.NewResponse(
-			c,
-			500,
-			false,
-			nil,
-			err,
-		)
-		return
-	}
-	contextExists := contextExistsInDatabase && contextExistsInProfile
 	agentProfile, err := manager.MainAgentProfileManager.SearchAgentProfile(
 		c.Request.Context(),
 		query.AgentKey,
@@ -236,7 +206,7 @@ func GetCurrentEmotion(
 		)
 		return
 	}
-	contextData, err := manager.MainContextManager.GetDataFromContext(
+	contextData, err := manager.MainContextManager.GetEmotionFromContext(
 		c.Request.Context(),
 		query.ContextKey,
 	)

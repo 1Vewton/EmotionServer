@@ -7,14 +7,14 @@ import (
 
 // GetEmotionToken gets the token for getting emotion
 func GetEmotionToken(
-	apiKey string,
+	agentKey string,
 	contextID string,
 ) string {
 	now := time.Now().Nanosecond()
 	return fmt.Sprintf(
 		"%s:%s_%s_%d",
 		"emotion",
-		apiKey,
+		agentKey,
 		contextID,
 		now,
 	)

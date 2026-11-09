@@ -90,6 +90,7 @@ func GetContextsOfAProfile(
 		)
 		return
 	}
+	// Clean data
 	err = manager.MainContextManager.CleanAllData(
 		c.Request.Context(),
 		query.AgentKey,
@@ -104,6 +105,7 @@ func GetContextsOfAProfile(
 		)
 		return
 	}
+	// Get contexts
 	contexts, err := manager.MainContextManager.GetContextsInProfile(
 		c.Request.Context(),
 		query.AgentKey,
@@ -115,6 +117,18 @@ func GetContextsOfAProfile(
 			false,
 			nil,
 			err,
+		)
+		return
+	}
+	if contexts == nil {
+		response.NewResponse(
+			c,
+			404,
+			false,
+			nil,
+			errors.New(
+				"context set does not exists",
+			),
 		)
 		return
 	}

@@ -2,9 +2,7 @@ package manager
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/1Vewton/EmotionServer/internal/profile"
@@ -16,6 +14,7 @@ type ContextManager struct {
 	client                  *redis.Client
 	profileManager          *AgentProfileManager
 	profileToContextManager *ProfileToContextManager
+	emotionManager          *EmotionManager
 }
 
 // NewContextManager creates new context manager
@@ -25,67 +24,16 @@ func NewContextManager(
 ) *ContextManager {
 	profileToContextManager := NewProfileToContextManager(
 		client,
-		profileManager,
+	)
+	emotionManager := NewEmotionManager(
+		client,
 	)
 	return &ContextManager{
 		client:                  client,
 		profileManager:          profileManager,
 		profileToContextManager: profileToContextManager,
+		emotionManager:          emotionManager,
 	}
-}
-
-// ContextExistsWithAgentProfile checks if certain agent profile has context
-// system: agentprofile -> context
-func (manager *ContextManager) ContextExistsWithAgentProfile(
-	ctx context.Context,
-	agentKey string,
-	contextKey string,
-) (bool, error) {
-	keyExists, err := manager.client.Exists(
-		ctx,
-		agentKey,
-	).Result()
-	if err != nil {
-		return false, err
-	}
-	if keyExists < 0 {
-		return false, nil
-	}
-	existsInProfileList, err := manager.client.SIsMember(
-		ctx,
-		agentKey,
-		contextKey,
-	).Result()
-	if err != nil {
-		return false, err
-	}
-	return existsInProfileList, err
-}
-
-// AddNewContextForProfile adds new context under an agent profile
-// system: agentprofile -> context
-func (manager *ContextManager) AddNewContextForProfile(
-	ctx context.Context,
-	agentKey string,
-	contextKey string,
-) error {
-	exists, err := manager.ContextExistsWithAgentProfile(
-		ctx,
-		agentKey,
-		contextKey,
-	)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return nil
-	}
-	_, err = manager.client.SAdd(
-		ctx,
-		agentKey,
-		contextKey,
-	).Result()
-	return err
 }
 
 // NewContext creates new context
@@ -117,81 +65,59 @@ func (manager *ContextManager) NewContext(
 			)
 		}
 	}
-	storedProfile := agentProfile.ToStoredProfile()
-	stringResult, err := json.Marshal(
-		storedProfile,
-	)
-	if err != nil {
-		return "", err
-	}
-	// Adds new context
-	key := GetEmotionToken(
-		agentKey,
+	// AddNewContext
+	contextKey := GetEmotionToken(
+		agentProfile.AgentKey,
 		contextID,
 	)
-	exists, err := manager.client.Exists(
+	err = manager.emotionManager.AddEmotionInfo(
 		ctx,
-		key,
-	).Result()
+		agentProfile.AgentKey,
+		contextKey,
+		agentProfile,
+		contextExistsTime,
+	)
 	if err != nil {
-		return "", err
+		return contextKey, err
 	}
-	if exists == 0 {
-		_, err = manager.client.Set(
-			ctx,
-			key,
-			stringResult,
-			contextExistsTime,
-		).Result()
-		manager.AddNewContextForProfile(
-			ctx,
-			agentKey,
-			key,
-		)
-		return key, err
-	}
-	return key, nil
+	err = manager.profileToContextManager.AddContext(
+		ctx,
+		agentKey,
+		contextKey,
+	)
+	return contextKey, err
 }
 
 // HasContext checks if certain context exists
 func (manager *ContextManager) HasContext(
 	ctx context.Context,
+	agentKey string,
 	contextKey string,
 ) (bool, error) {
-	exists, err := manager.client.Exists(
+	contextExists, err := manager.emotionManager.ContextExists(
 		ctx,
 		contextKey,
-	).Result()
+	)
 	if err != nil {
 		return false, err
 	}
-	if exists == 0 {
-		return false, nil
-	}
-	return true, nil
+	contextExistsInProfile, err := manager.profileToContextManager.ContextExistsWithAgentProfile(
+		ctx,
+		agentKey,
+		contextKey,
+	)
+	return contextExists && contextExistsInProfile, err
 }
 
-// GetDataFromContext gets the stored profile from context key
-func (manager *ContextManager) GetDataFromContext(
+// GetEmotionFromContext gets the stored profile from context key
+func (manager *ContextManager) GetEmotionFromContext(
 	ctx context.Context,
 	contextKey string,
 ) (*profile.StoredProfile, error) {
-	var result *profile.StoredProfile
-	stringResult, err := manager.client.Get(
+	return manager.emotionManager.GetEmotionFromContext(
 		ctx,
 		contextKey,
-	).Result()
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(
-		[]byte(stringResult),
-		&result,
 	)
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
 }
 
 // DeleteContext deletes context
@@ -201,6 +127,7 @@ func (manager *ContextManager) DeleteContext(
 ) error {
 	exists, err := manager.HasContext(
 		ctx,
+		"",
 		contextKey,
 	)
 	if err != nil {
@@ -245,17 +172,10 @@ func (manager *ContextManager) HasProfile(
 	ctx context.Context,
 	agentKey string,
 ) (bool, error) {
-	exists, err := manager.client.Exists(
+	return manager.profileToContextManager.ProfileExists(
 		ctx,
 		agentKey,
-	).Result()
-	if err != nil {
-		return false, err
-	}
-	if exists == 0 {
-		return false, nil
-	}
-	return true, nil
+	)
 }
 
 // GetContextsInProfile gets all the context keys in a collection of agent profile
@@ -263,24 +183,10 @@ func (manager *ContextManager) GetContextsInProfile(
 	ctx context.Context,
 	agentKey string,
 ) ([]string, error) {
-	hasProfile, err := manager.HasProfile(
+	return manager.profileToContextManager.GetContextsInProfile(
 		ctx,
 		agentKey,
 	)
-	if err != nil {
-		return nil, err
-	}
-	if !hasProfile {
-		return nil, fmt.Errorf(
-			"profile with api-key %s does not exists",
-			agentKey,
-		)
-	}
-	contexts, err := manager.client.SMembers(
-		ctx,
-		agentKey,
-	).Result()
-	return contexts, err
 }
 
 // DeleteProfileData deletes a profile stored in redis and the data of its context
@@ -288,7 +194,7 @@ func (manager *ContextManager) DeleteProfileData(
 	ctx context.Context,
 	agentKey string,
 ) error {
-	contexts, err := manager.GetContextsInProfile(
+	contexts, err := manager.profileToContextManager.GetContextsInProfile(
 		ctx,
 		agentKey,
 	)
@@ -317,14 +223,14 @@ func (manager *ContextManager) CleanSingleData(
 	agentKey string,
 	contextKey string,
 ) error {
-	contextExists, err := manager.HasContext(
+	contextExists, err := manager.emotionManager.ContextExists(
 		ctx,
 		contextKey,
 	)
 	if err != nil {
 		return err
 	}
-	contextExistsWithProfile, err := manager.ContextExistsWithAgentProfile(
+	contextExistsWithProfile, err := manager.profileToContextManager.ContextExistsWithAgentProfile(
 		ctx,
 		agentKey,
 		contextKey,
@@ -348,7 +254,7 @@ func (manager *ContextManager) CleanAllData(
 	ctx context.Context,
 	agentKey string,
 ) error {
-	contexts, err := manager.GetContextsInProfile(
+	contexts, err := manager.profileToContextManager.GetContextsInProfile(
 		ctx,
 		agentKey,
 	)
